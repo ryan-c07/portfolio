@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ryan Chen — Software Engineer</title>
+  <meta name="description" content="Ryan Chen — Computer Science student at Stony Brook University and Software Engineer in New York." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- React + Material UI + framer-motion (UMD) -->
+  <script crossorigin src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/@mui/material@5.15.20/umd/material-ui.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/framer-motion@10.18.0/dist/framer-motion.js"></script>
+  <script crossorigin src="https://unpkg.com/three@0.149.0/build/three.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.24.7/babel.min.js"></script>
+
+  <style>
+    :root { --ink:#0a0a0a; --yellow:#ffd400; --paper:#ffffff; --paper2:#f6f6f4; --line:#e6e6e2; --text:#111; --mute:#6b6b6b; }
+    html { scroll-behavior: smooth; }
+    body { margin:0; background:var(--paper); color:var(--text); font-family:'Manrope', system-ui, sans-serif; -webkit-font-smoothing:antialiased; overflow-x:hidden; }
+    ::selection { background:var(--yellow); color:#000; }
+    ::-webkit-scrollbar { width:8px; } ::-webkit-scrollbar-track { background:#111; } ::-webkit-scrollbar-thumb { background:#333; border-radius:999px; } ::-webkit-scrollbar-thumb:hover { background:var(--yellow); }
+
+    /* Hero: inset rounded frame, liquid canvas, glass cards */
+    .hero { position:relative; background:#0d0d0d; color:#fff; overflow:hidden; min-height:calc(100svh - 24px); border-radius:28px; border:1px solid rgba(255,255,255,.06); }
+    @media (max-width:899px) { .hero { border-radius:0; min-height:100svh; border:0; } }
+    .hero-canvas { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
+    .hero-canvas canvas { display:block; width:100% !important; height:100% !important; }
+    .hero-glow { position:absolute; left:50%; bottom:-20%; width:70%; height:60%; transform:translateX(-50%); pointer-events:none; background: radial-gradient(closest-side, rgba(255,212,0,.16), rgba(255,212,0,0)); filter: blur(30px); }
+    .hero-vignette { position:absolute; inset:0; pointer-events:none; background: radial-gradient(70% 55% at 50% 0%, rgba(255,255,255,.05), transparent 70%); }
+    .hero-link { color:rgba(255,255,255,.7); text-decoration:none; font-weight:600; font-size:14px; transition:color .2s; }
+    .hero-link:hover { color:#ffd400; }
+    .glass-card { position:absolute; z-index:2; width:200px; padding:16px 18px; border-radius:18px; background:rgba(20,20,20,.55); border:1px solid rgba(255,255,255,.12); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); box-shadow:0 30px 60px -30px rgba(0,0,0,.8); }
+    @media (max-width:1099px) { .glass-card { display:none; } }
+    .glass-head { display:flex; justify-content:space-between; align-items:center; font-size:11px; color:rgba(255,255,255,.6); font-weight:600; }
+    .glass-arrow { width:26px; height:26px; border-radius:999px; background:#fff; color:#000; display:grid; place-items:center; }
+    .glass-title { margin-top:12px; font-weight:700; font-size:15px; line-height:1.25; }
+    .glass-sub { display:block; font-size:11px; color:rgba(255,255,255,.45); font-weight:600; margin-top:6px; }
+    .glass-big { margin-top:10px; font-weight:800; font-size:30px; letter-spacing:-.03em; }
+    .glass-bar { margin-top:10px; height:3px; background:rgba(255,255,255,.12); border-radius:999px; overflow:hidden; }
+    .glass-bar > div { height:100%; background:#ffd400; border-radius:999px; }
+
+    .label { font-size:11px; font-weight:700; letter-spacing:.16em; text-transform:uppercase; color:var(--mute); }
+    .label-y { color:#9a7f00; }
+
+    /* Project preview mock UIs */
+    .preview { height:200px; border-bottom:1px solid var(--line); background:var(--paper2); position:relative; overflow:hidden; }
+    .mock { position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); transition: transform .5s cubic-bezier(.22,1,.36,1); }
+    .proj:hover .mock { transform:translate(-50%,-50%) scale(1.04); }
+    .mock-dark { background:#111; color:#fff; border-radius:12px; padding:14px; width:260px; box-shadow:0 20px 40px -20px rgba(0,0,0,.4); font-size:11px; }
+    .mock-light { background:#fff; color:#111; border:1px solid var(--line); border-radius:12px; padding:14px; width:260px; box-shadow:0 20px 40px -20px rgba(0,0,0,.25); font-size:11px; }
+    .row { display:flex; justify-content:space-between; align-items:center; padding:5px 0; border-bottom:1px solid rgba(128,128,128,.18); }
+    .row:last-child { border-bottom:0; }
+    .dot { display:inline-block; width:6px; height:6px; border-radius:999px; background:var(--yellow); margin-right:6px; }
+    .ans { border:1px solid #333; border-radius:8px; padding:6px 8px; margin-top:6px; }
+    .ans.ok { background:var(--yellow); color:#000; border-color:var(--yellow); font-weight:700; }
+
+    .grid-bg { background-image: linear-gradient(var(--line) 1px, transparent 1px), linear-gradient(90deg, var(--line) 1px, transparent 1px); background-size: 40px 40px; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel" data-presets="react">
+    const { useState, useEffect, useRef, useMemo } = React;
+    const {
+      ThemeProvider, createTheme, CssBaseline, Box, Container, Typography, Button, Chip, IconButton, Avatar, Stack, Grid,
+      Card, CardContent, Dialog, DialogContent, TextField, Snackbar, Alert, Tooltip, useMediaQuery, Divider, LinearProgress,
+    } = MaterialUI;
+    const { motion, AnimatePresence } = Motion;
+
+    /* ================= THEME ================= */
+    const theme = createTheme({
+      palette: {
+        mode: 'light',
+        primary: { main: '#ffd400', contrastText: '#000' },
+        secondary: { main: '#0a0a0a' },
+        background: { default: '#ffffff', paper: '#ffffff' },
+        text: { primary: '#111111', secondary: '#6b6b6b' },
+        divider: '#e6e6e2',
+      },
+      shape: { borderRadius: 14 },
+      typography: {
+        fontFamily: 'Manrope, system-ui, sans-serif',
+        h1: { fontWeight: 800, letterSpacing: '-0.03em' },
+        h2: { fontWeight: 800, letterSpacing: '-0.03em', fontSize: 'clamp(1.6rem, 3vw, 2.1rem)', lineHeight: 1.2 },
+        h3: { fontWeight: 700, letterSpacing: '-0.02em' },
+        button: { textTransform: 'none', fontWeight: 700 },
+      },
+      components: {
+        MuiButton: { styleOverrides: { root: { borderRadius: 999, paddingInline: 18, boxShadow: 'none', '&:hover': { boxShadow: 'none' } } } },
+        MuiChip: { styleOverrides: { root: { borderRadius: 999, fontWeight: 600 } } },
+        MuiCard: { styleOverrides: { root: { border: '1px solid #e6e6e2', boxShadow: 'none', borderRadius: 16 } } },
+        MuiTextField: { defaultProps: { variant: 'outlined', fullWidth: true } },
+      },
+    });
+
+    /* ================= DATA ================= */
+    const PROFILE = {
+      name: 'Ryan Chen', initials: 'RC', location: 'New York, NY',
+      email: 'ryancwork10@gmail.com', phone: '646-247-6870', site: 'https://ryanchen.xyz',
+      github: 'https://github.com/ryan-c07', linkedin: 'https://linkedin.com/in/ryanchen07',
+      resume: 'Ryan_Chen_Resume.pdf',
+      roles: ['Software Engineer', 'CS @ Stony Brook University', 'Database Architect', 'AI App Builder'],
+    };
+
+    const HIGHLIGHTS = [
+      { t: 'Pharmacy DB', s: 'paid PostgreSQL client work' },
+      { t: 'Headstarter', s: 'AI software engineering fellow' },
+      { t: 'CS @ SBU', s: '3.67 GPA · Dean\'s List' },
+      { t: 'Full-stack', s: 'React, APIs, SQL, game dev' },
+    ];
+
+    // Add more { src, caption } entries to get a clickable thumbnail strip under the photo.
+    const PHOTOS = [
+      { src: 'images/me.jpg', caption: 'Ryan Chen · New York, NY' },
+    ];
+
+    const NOW = [
+      { label: 'Now listening to', tag: 'Spotify', title: null, body: 'Spotify is quiet right now.' },
+      { label: 'Now working on', tag: null, title: 'Pharmacy database rollout', body: 'Hardening the role-scoped access layer and TwilioBot refill flow for a multi-branch NYC pharmacy network.' },
+      { label: 'Currently learning', tag: null, title: 'Systems programming', body: 'Going deeper on C and assembly through Systems Fundamentals, and reading about how databases manage pages on disk.' },
+      { label: 'Now building', tag: 'GitHub', title: null, body: 'Recent GitHub activity will show here once the integration is wired up.' },
+    ];
+
+    const PROJECTS = [
+      {
+        id: 'pharmacy', tag: 'PostgreSQL', title: 'Pharmacy Database Architect', badge: 'Paid project', date: 'Oct 2025',
+        desc: 'Multi-branch NYC pharmacy network database with a secure access schema for a mobile app and TwilioBot.',
+        stack: ['SQL', 'Bash', 'PostgreSQL', 'Twilio API'], live: null, code: null,
+        highlights: [
+          'Architected a multi-branch NYC pharmacy network database in PostgreSQL to streamline operations.',
+          'Designed secure access schema connecting mobile applications and TwilioBot API.',
+          'Built synthetic data scripts to simulate patient & prescription interactions for system testing.',
+        ],
+        arch: [
+          ['Normalized relational core', 'Branches, patients, prescribers, prescriptions, refills, and inventory as 3NF tables with foreign keys and check constraints.'],
+          ['Role-scoped access layer', 'Separate PostgreSQL roles for the app and the bot, restricted to views and stored procedures.'],
+          ['TwilioBot integration', 'SMS refill requests call parameterized procedures and return status without exposing PHI.'],
+          ['Synthetic data pipeline', 'Bash + SQL scripts generate thousands of realistic events to load-test before go-live.'],
+        ],
+        Preview: () => (
+          <div className="mock mock-dark">
+            <div className="row"><span><span className="dot"></span>prescriptions</span><span style={{opacity:.5}}>PostgreSQL</span></div>
+            <div className="row"><span>rx_id · patient_id · branch_id</span><span style={{opacity:.5}}>PK/FK</span></div>
+            <div className="row"><span>refills(rx_id, requested_at)</span><span style={{color:'#ffd400'}}>queued</span></div>
+            <div style={{marginTop:10, background:'#1c1c1c', borderRadius:8, padding:'6px 8px'}}>📱 TwilioBot: "Refill RX-4821?" → <b style={{color:'#ffd400'}}>queued</b></div>
+          </div>
+        ),
+      },
+      {
+        id: 'pantry', tag: 'React', title: 'Pantry Tracker', badge: 'Headstarter', date: 'Aug 2024',
+        desc: 'Responsive pantry inventory app with dynamic search and Gemini-powered recipe generation.',
+        stack: ['JavaScript', 'React.js', 'Material-UI', 'Gemini API'], live: null, code: PROFILE.github,
+        highlights: [
+          'Created responsive Web application tracking pantry inventory with dynamic search and AI-driven recipe generation.',
+          'Developed fully mobile-optimized UI with interactive inventory management modals.',
+        ],
+        arch: [
+          ['React + Material-UI front end', 'Component-driven UI with responsive Grid layouts and MUI modals for add, edit, and remove flows.'],
+          ['Client-side search', 'In-memory filtering on every keystroke with debounced state updates.'],
+          ['Gemini recipe engine', 'Inventory is serialized into a structured prompt and recipes come back constrained to on-hand items.'],
+          ['Mobile-first', 'Touch-sized targets and bottom-anchored actions for one-handed kitchen use.'],
+        ],
+        Preview: () => (
+          <div className="mock mock-light">
+            <div style={{border:'1px solid #e6e6e2', borderRadius:8, padding:'5px 8px', color:'#888'}}>🔍 Search pantry…</div>
+            <div className="row"><span>Eggs</span><span>12</span></div>
+            <div className="row"><span>Spinach</span><span>1 bag</span></div>
+            <div className="row"><span>Parmesan</span><span>200g</span></div>
+            <div style={{marginTop:8, background:'#ffd400', borderRadius:999, padding:'6px 10px', textAlign:'center', fontWeight:700}}>✨ Generate recipes</div>
+          </div>
+        ),
+      },
+      {
+        id: 'nuetrivia', tag: 'Java', title: 'Nue-Trivia', badge: 'Hackathon winner', date: 'Oct 2024',
+        desc: 'Award-winning youth nutrition game with custom sprites and real-time GPT-4 generated trivia.',
+        stack: ['Java', 'OpenAI API (GPT-4)', 'JFrame'], live: null, code: PROFILE.github,
+        highlights: [
+          'Built award-winning youth nutrition game featuring custom game sprites and real-time AI-generated trivia.',
+          'Created interactive gameplay loop with point-based reward mechanisms to boost learning engagement.',
+        ],
+        arch: [
+          ['Swing / JFrame renderer', 'Custom game loop on a Swing Timer repaints sprite layers; a state machine drives screens.'],
+          ['GPT-4 trivia generator', 'Async calls fetch age-appropriate questions, pre-fetched a round ahead to hide latency.'],
+          ['Custom sprite assets', 'Hand-drawn food characters loaded through a lightweight sprite-sheet manager.'],
+          ['Reward mechanics', 'Streak multipliers, unlockables, and a persistent high-score board.'],
+        ],
+        Preview: () => (
+          <div className="mock mock-dark">
+            <div className="row"><span>🥕 Nue-Trivia</span><span style={{color:'#ffd400'}}>Score 240</span></div>
+            <div style={{marginTop:6, fontWeight:700}}>Which food is highest in fiber?</div>
+            <div className="ans">Cheddar cheese</div>
+            <div className="ans ok">Black beans</div>
+            <div className="ans">White rice</div>
+          </div>
+        ),
+      },
+    ];
+
+    // icon: Simple Icons slug (https://simpleicons.org). mono: fallback letters when no brand icon exists.
+    const STACK = {
+      'Languages': [
+        { n: 'Java', icon: 'openjdk' }, { n: 'Kotlin', icon: 'kotlin' }, { n: 'Python', icon: 'python' }, { n: 'Swift', icon: 'swift' },
+        { n: 'SQL', icon: 'postgresql' }, { n: 'JavaScript', icon: 'javascript' }, { n: 'HTML/CSS', icon: 'html5' },
+      ],
+      'Frameworks & APIs': [
+        { n: 'React.js', icon: 'react' }, { n: 'Next.js', icon: 'nextdotjs' }, { n: 'Material-UI', icon: 'mui' }, { n: 'OpenAI API', mono: 'AI' },
+        { n: 'Gemini API', icon: 'googlegemini' }, { n: 'Twilio API', mono: 'Tw' }, { n: 'PostgreSQL', icon: 'postgresql' },
+      ],
+      'Tools': [
+        { n: 'Git', icon: 'git' }, { n: 'VS Code', mono: '</>' }, { n: 'PyCharm', icon: 'pycharm' }, { n: 'IntelliJ', icon: 'intellijidea' },
+        { n: 'Android Studio', icon: 'androidstudio' }, { n: 'Xcode', icon: 'xcode' }, { n: 'Bash', icon: 'gnubash' },
+      ],
+      'Certifications': [
+        { n: 'Google Cybersecurity (Coursera)', icon: 'google' }, { n: 'Meta Front-End Developer (Coursera)', icon: 'meta' },
+      ],
+    };
+
+    const TechIcon = ({ item, size = 16 }) => item.icon
+      ? <img src={`https://cdn.simpleicons.org/${item.icon}/111111`} alt="" width={size} height={size} loading="lazy" style={{ display: 'block' }} />
+      : <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: '-.02em', lineHeight: 1 }}>{item.mono}</span>;
+
+    const EXPERIENCE = [
+      { org: 'Headstarter AI', role: 'Software Engineering Fellow', when: 'Jul 2024 – Sept 2024', loc: 'Stony Brook, NY',
+        bullets: ['Engineered AI-driven projects including Pantry Tracker, AI flashcards, and an AI customer support system using Next.js, Material-UI, and OpenAI and Gemini APIs.', 'Refined technical communication skills through 5+ mock interviews with mentors and peers.'] },
+      { org: 'NYCDOE Division of Instructional & Information Technology', role: 'Intern', when: 'Jul 2024 – Aug 2024', loc: 'Brooklyn, NY',
+        bullets: ['Analyzed TeachHub data and surveyed 500+ K-12 students across the nation\'s largest school district (912,064 students).', 'Synthesized findings into comprehensive report and presented findings directly to CIO and executive leadership.'] },
+      { org: 'NYCDOE Division of Instructional & Information Technology', role: 'Project Intern', when: 'Apr 2024 – May 2024', loc: 'Brooklyn, NY',
+        bullets: ['Standardized official transcript workflows using detailed UML diagrams and technical proposals.', 'Evaluated official student records (transcripts, IEPs, 504s, PSAL docs) across departments.'] },
+      { org: 'Yaya Tea Garden', role: 'Barista', when: 'Jul 2024 – Aug 2024', loc: 'Brooklyn, NY',
+        bullets: ['Served 100+ daily customers, crafted 500+ unique drink recipes, and managed store closing/financial reconciliation.'] },
+    ];
+
+    const EDUCATION = {
+      school: 'Stony Brook University', degree: 'B.S. in Computer Science', when: 'Expected May 2029',
+      bullets: ['GPA: 3.67 / 4.00', 'Dean\'s List: Fall 2025, Spring 2026', 'Coursework: Data Structures, Discrete Mathematics, Principles of Programming Languages, Systems Fundamentals (C, Assembly).'],
+    };
+
+    /* ================= ICONS (inline SVG) ================= */
+    const Svg = ({ d, size = 18 }) => (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{d}</svg>
+    );
+    const I = {
+      github: <Svg d={<><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></>} />,
+      linkedin: <Svg d={<><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect width="4" height="12" x="2" y="9"/><circle cx="4" cy="4" r="2"/></>} />,
+      mail: <Svg d={<><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></>} />,
+      left: <Svg d={<path d="m15 18-6-6 6-6"/>} />,
+      right: <Svg d={<path d="m9 18 6-6-6-6"/>} />,
+      out: <Svg size={14} d={<><path d="M7 17 17 7"/><path d="M7 7h10v10"/></>} />,
+      down: <Svg size={16} d={<><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></>} />,
+      x: <Svg d={<><path d="M18 6 6 18"/><path d="m6 6 12 12"/></>} />,
+    };
+
+    /* ================= HELPERS ================= */
+    const Reveal = ({ children, delay = 0, y = 22, ...rest }) => (
+      <motion.div initial={{ opacity: 0, y }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: '-80px' }}
+        transition={{ duration: .7, ease: [.22, 1, .36, 1], delay }} {...rest}>{children}</motion.div>
+    );
+
+    const SectionHead = ({ label, title, right }) => (
+      <Reveal>
+        <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" alignItems={{ md: 'flex-end' }} spacing={2} sx={{ mb: 5 }}>
+          <Box>
+            <div className="label label-y" style={{ marginBottom: 12 }}>{label}</div>
+            <Typography variant="h2" sx={{ maxWidth: 640 }}>{title}</Typography>
+          </Box>
+          {right}
+        </Stack>
+      </Reveal>
+    );
+
+    function useTypewriter(words, speed = 55, pause = 1600) {
+      const [i, setI] = useState(0), [txt, setTxt] = useState(''), [del, setDel] = useState(false);
+      useEffect(() => {
+        const w = words[i % words.length];
+        let t;
+        if (!del && txt === w) t = setTimeout(() => setDel(true), pause);
+        else if (del && txt === '') { setDel(false); setI(i + 1); }
+        else t = setTimeout(() => setTxt(del ? w.slice(0, txt.length - 1) : w.slice(0, txt.length + 1)), del ? speed / 2 : speed);
+        return () => clearTimeout(t);
+      }, [txt, del, i]);
+      return txt;
+    }
+
+    /* ================= HERO: Three.js liquid form ================= */
+    const NOISE_GLSL = `
+      vec3 mod289(vec3 x){return x-floor(x*(1.0/289.0))*289.0;}
+      vec4 mod289(vec4 x){return x-floor(x*(1.0/289.0))*289.0;}
+      vec4 permute(vec4 x){return mod289(((x*34.0)+1.0)*x);}
+      vec4 taylorInvSqrt(vec4 r){return 1.79284291400159-0.85373472095314*r;}
+      float snoise(vec3 v){
+        const vec2 C=vec2(1.0/6.0,1.0/3.0); const vec4 D=vec4(0.0,0.5,1.0,2.0);
+        vec3 i=floor(v+dot(v,C.yyy)); vec3 x0=v-i+dot(i,C.xxx);
+        vec3 g=step(x0.yzx,x0.xyz); vec3 l=1.0-g; vec3 i1=min(g.xyz,l.zxy); vec3 i2=max(g.xyz,l.zxy);
+        vec3 x1=x0-i1+C.xxx; vec3 x2=x0-i2+C.yyy; vec3 x3=x0-D.yyy;
+        i=mod289(i);
+        vec4 p=permute(permute(permute(i.z+vec4(0.0,i1.z,i2.z,1.0))+i.y+vec4(0.0,i1.y,i2.y,1.0))+i.x+vec4(0.0,i1.x,i2.x,1.0));
+        float n_=0.142857142857; vec3 ns=n_*D.wyz-D.xzx;
+        vec4 j=p-49.0*floor(p*ns.z*ns.z); vec4 x_=floor(j*ns.z); vec4 y_=floor(j-7.0*x_);
+        vec4 x=x_*ns.x+ns.yyyy; vec4 y=y_*ns.x+ns.yyyy; vec4 h=1.0-abs(x)-abs(y);
+        vec4 b0=vec4(x.xy,y.xy); vec4 b1=vec4(x.zw,y.zw);
+        vec4 s0=floor(b0)*2.0+1.0; vec4 s1=floor(b1)*2.0+1.0; vec4 sh=-step(h,vec4(0.0));
+        vec4 a0=b0.xzyw+s0.xzyw*sh.xxyy; vec4 a1=b1.xzyw+s1.xzyw*sh.zzww;
+        vec3 p0=vec3(a0.xy,h.x); vec3 p1=vec3(a0.zw,h.y); vec3 p2=vec3(a1.xy,h.z); vec3 p3=vec3(a1.zw,h.w);
+        vec4 norm=taylorInvSqrt(vec4(dot(p0,p0),dot(p1,p1),dot(p2,p2),dot(p3,p3)));
+        p0*=norm.x; p1*=norm.y; p2*=norm.z; p3*=norm.w;
+        vec4 m=max(0.6-vec4(dot(x0,x0),dot(x1,x1),dot(x2,x2),dot(x3,x3)),0.0); m=m*m;
+        return 42.0*dot(m*m,vec4(dot(p0,x0),dot(p1,x1),dot(p2,x2),dot(p3,x3)));
+      }
+      uniform float uTime; uniform float uAmp; uniform float uFreq;
+      vec3 displace(vec3 p){
+        float n = snoise(p * uFreq + vec3(0.0, uTime * 0.25, uTime * 0.15));
+        float n2 = snoise(p * uFreq * 2.2 - vec3(uTime * 0.18)) * 0.35;
+        return p * (1.0 + (n + n2) * uAmp);
+      }`;
+
+    function LiquidCanvas() {
+      const ref = useRef(null);
+      useEffect(() => {
+        if (!window.THREE) return;
+        const el = ref.current;
+        const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
+        renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
+        renderer.outputEncoding = THREE.sRGBEncoding;
+        el.appendChild(renderer.domElement);
+
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(34, 1, .1, 60);
+        camera.position.set(0, 0.15, 7.2);
+
+        // Translucent "silk" shells: displaced spheres drawn additively with a fresnel edge glow
+        const VERT = NOISE_GLSL + `
+          uniform float uSeed;
+          varying vec3 vN; varying vec3 vV; varying vec3 vP;
+          vec3 disp(vec3 p) {
+            vec3 q = p + vec3(uSeed);
+            float n = snoise(q * uFreq + vec3(0.0, uTime * 0.25, uTime * 0.15));
+            float n2 = snoise(q * uFreq * 2.2 - vec3(uTime * 0.18)) * 0.35;
+            return p * (1.0 + (n + n2) * uAmp);
+          }
+          void main() {
+            vec3 nrm = normalize(normal);
+            vec3 tng = normalize(cross(nrm, abs(nrm.y) < 0.99 ? vec3(0.0,1.0,0.0) : vec3(1.0,0.0,0.0)));
+            vec3 btg = cross(nrm, tng);
+            float eps = 0.015;
+            vec3 d0 = disp(position), d1 = disp(position + tng * eps), d2 = disp(position + btg * eps);
+            vec3 n2 = normalize(cross(d1 - d0, d2 - d0));
+            vec4 mv = modelViewMatrix * vec4(d0, 1.0);
+            vN = normalize(normalMatrix * n2);
+            vV = normalize(-mv.xyz);
+            vP = d0;
+            gl_Position = projectionMatrix * mv;
+          }`;
+        const FRAG = NOISE_GLSL + `
+          uniform vec3 uColor; uniform float uRimPow; uniform float uRimStr; uniform float uFill;
+          varying vec3 vN; varying vec3 vV; varying vec3 vP;
+          void main() {
+            float ndv = abs(dot(normalize(vN), normalize(vV)));
+            float rim = pow(1.0 - ndv, uRimPow);
+            float folds = 0.55 + 0.45 * snoise(vP * 1.6 + vec3(0.0, uTime * 0.12, 0.0));
+            float edge = rim * uRimStr;
+            float body = uFill * folds * (0.4 + 0.6 * (1.0 - ndv));
+            vec3 col = uColor * (edge + body) + vec3(1.0, 0.97, 0.85) * pow(rim, 6.0) * 0.5;
+            gl_FragColor = vec4(col, clamp(edge + body, 0.0, 1.0));
+          }`;
+        const geo = new THREE.IcosahedronGeometry(1.8, 96);
+        const shells = [];
+        const mk = (scale, seed, rimPow, rimStr, fill, amp) => {
+          const u = { uTime: { value: 0 }, uAmp: { value: amp }, uFreq: { value: .7 }, uSeed: { value: seed },
+            uColor: { value: new THREE.Color(0xffd400) }, uRimPow: { value: rimPow }, uRimStr: { value: rimStr }, uFill: { value: fill } };
+          const m = new THREE.ShaderMaterial({ uniforms: u, vertexShader: VERT, fragmentShader: FRAG, transparent: true, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending });
+          const mesh = new THREE.Mesh(geo, m); mesh.scale.setScalar(scale); scene.add(mesh); shells.push({ mesh, u }); return mesh;
+        };
+        const group = new THREE.Group(); scene.add(group);
+        [mk(1.00, 0.0, 2.6, 1.15, .045, .11), mk(0.93, 3.7, 3.2, .75, .035, .13), mk(0.85, 8.1, 3.8, .55, .03, .15)].forEach(m => group.add(m));
+
+        // Stars
+        const sGeo = new THREE.BufferGeometry();
+        const sPos = new Float32Array(360 * 3);
+        for (let i = 0; i < 360; i++) { sPos[i * 3] = (Math.random() - .5) * 26; sPos[i * 3 + 1] = (Math.random() - .3) * 14; sPos[i * 3 + 2] = -6 - Math.random() * 10; }
+        sGeo.setAttribute('position', new THREE.BufferAttribute(sPos, 3));
+        const stars = new THREE.Points(sGeo, new THREE.PointsMaterial({ color: 0xffffff, size: .045, transparent: true, opacity: .7, sizeAttenuation: true }));
+        scene.add(stars);
+
+        // Layout
+        let w = 1, h = 1;
+        const resize = () => {
+          w = el.clientWidth; h = el.clientHeight;
+          renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix();
+          const visH = 2 * camera.position.z * Math.tan(camera.fov * Math.PI / 360);
+          group.position.y = -visH * .5 + 0.05;
+          const s = Math.min(1.25, Math.max(.8, w / 1200));
+          group.scale.set(1.35 * s, s, s);
+        };
+        const ro = new ResizeObserver(resize); ro.observe(el); resize();
+
+        // Pointer parallax
+        const target = { x: 0, y: 0 }; const cur = { x: 0, y: 0 };
+        const onMove = e => { const r = el.getBoundingClientRect(); target.x = ((e.clientX - r.left) / r.width - .5); target.y = ((e.clientY - r.top) / r.height - .5); };
+        el.parentElement.addEventListener('pointermove', onMove);
+
+        let raf, t0 = performance.now();
+        const frame = now => {
+          const t = (now - t0) / 1000;
+          shells.forEach(({ u }) => u.uTime.value = t);
+          cur.x += (target.x - cur.x) * .04; cur.y += (target.y - cur.y) * .04;
+          group.rotation.y = t * .05 + cur.x * .35;
+          group.rotation.x = cur.y * .2;
+          stars.rotation.z = t * .004;
+          renderer.render(scene, camera);
+          if (!reduced) raf = requestAnimationFrame(frame);
+        };
+        raf = requestAnimationFrame(frame);
+
+        return () => {
+          cancelAnimationFrame(raf); ro.disconnect(); el.parentElement.removeEventListener('pointermove', onMove);
+          geo.dispose(); shells.forEach(s => s.mesh.material.dispose()); sGeo.dispose(); renderer.dispose(); el.removeChild(renderer.domElement);
+        };
+      }, []);
+      return <div ref={ref} className="hero-canvas" />;
+    }
+
+    function Hero({ onContact }) {
+      const links = [['About', '#about'], ['Now', '#now'], ['Projects', '#projects'], ['Stack', '#stack'], ['Resume', PROFILE.resume]];
+      const jump = (e, h) => { if (!h.startsWith('#')) return; e.preventDefault(); const el = document.querySelector(h); el && el.scrollIntoView({ behavior: 'smooth', block: 'start' }); history.replaceState(null, '', h); };
+      return (
+        <Box sx={{ p: { xs: 0, md: 1.5 }, bgcolor: '#0a0a0a' }}>
+          <section className="hero">
+            <div className="hero-glow" />
+            <LiquidCanvas />
+            <div className="hero-vignette" />
+
+            {/* Nav */}
+            <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 2, pt: 3 }}>
+              <Stack direction="row" alignItems="center" justifyContent="space-between">
+                <motion.a href="#top" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: .6 }}
+                  style={{ color: '#fff', textDecoration: 'none', fontWeight: 800, fontSize: 18, letterSpacing: '-0.02em' }}>
+                  Ryan Chen<span style={{ color: '#ffd400' }}>.</span>
+                </motion.a>
+                <Stack direction="row" spacing={4} sx={{ display: { xs: 'none', md: 'flex' } }}>
+                  {links.map(([t, h], i) => (
+                    <motion.a key={t} href={h} onClick={e => jump(e, h)} target={h.startsWith('#') ? undefined : '_blank'} rel="noopener"
+                      initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: .1 + i * .06 }}
+                      className="hero-link">{t}{!h.startsWith('#') && <span style={{ marginLeft: 4, verticalAlign: -2, display: 'inline-flex' }}>{I.out}</span>}</motion.a>
+                  ))}
+                </Stack>
+                <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: .6 }}>
+                  <Stack direction="row" spacing={1}>
+                    <Button href={PROFILE.github} target="_blank" rel="noopener" sx={{ color: '#fff', bgcolor: 'rgba(255,255,255,.08)', display: { xs: 'none', sm: 'inline-flex' }, '&:hover': { bgcolor: 'rgba(255,255,255,.14)' } }}>GitHub</Button>
+                    <Button onClick={onContact} sx={{ bgcolor: '#fff', color: '#000', '&:hover': { bgcolor: '#ffd400' } }}>Get in touch</Button>
+                  </Stack>
+                </motion.div>
+              </Stack>
+            </Container>
+
+            {/* Copy */}
+            <Container maxWidth="md" sx={{ position: 'relative', zIndex: 2, textAlign: 'center', pt: { xs: 10, md: 12 }, pb: { xs: 34, md: 44 } }}>
+              <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .9, delay: .15, ease: [.22, 1, .36, 1] }}>
+                <Typography variant="h1" sx={{ color: '#fff', fontSize: 'clamp(2.4rem, 6vw, 4.6rem)', lineHeight: 1.04, fontWeight: 700 }}>
+                  Hello! I am Ryan Chen,<br />from <Box component="span" sx={{ color: '#ffd400' }}>{PROFILE.location}</Box>
+                </Typography>
+              </motion.div>
+              <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .9, delay: .35 }}>
+                <Typography sx={{ mt: 3, mx: 'auto', maxWidth: 520, color: 'rgba(255,255,255,.6)', fontSize: { xs: 15, md: 17 }, lineHeight: 1.7 }}>
+                  Computer Science student at Stony Brook University and Software Engineer. Production databases, AI-driven apps, and a hackathon win.
+                </Typography>
+              </motion.div>
+              <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .9, delay: .5 }}>
+                <Stack direction="row" spacing={1.5} justifyContent="center" sx={{ mt: 4 }}>
+                  <Button href="#projects" onClick={e => jump(e, '#projects')} size="large" sx={{ bgcolor: '#fff', color: '#000', px: 3, '&:hover': { bgcolor: '#ffd400' } }}>See selected work</Button>
+                  <Button size="large" onClick={onContact} sx={{ color: '#fff', px: 3, bgcolor: 'rgba(255,255,255,.06)', '&:hover': { bgcolor: 'rgba(255,255,255,.12)' } }}>Contact</Button>
+                </Stack>
+              </motion.div>
+            </Container>
+
+            {/* Floating glass cards */}
+            <motion.div className="glass-card" style={{ left: '9%', bottom: '28%' }} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: .8, duration: .8 }}>
+              <motion.div animate={{ y: [0, -6, 0] }} transition={{ repeat: Infinity, duration: 6, ease: 'easeInOut' }}>
+                <div className="glass-head"><span>Nue-Trivia</span><span className="glass-arrow">{I.out}</span></div>
+                <div className="glass-title">Hackathon<br />Winner <span className="glass-sub">Oct 2024</span></div>
+              </motion.div>
+            </motion.div>
+            <motion.div className="glass-card" style={{ right: '9%', bottom: '18%' }} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1, duration: .8 }}>
+              <motion.div animate={{ y: [0, -6, 0] }} transition={{ repeat: Infinity, duration: 7, ease: 'easeInOut', delay: 1 }}>
+                <div className="glass-head"><span>NYCDOE research</span><span className="glass-arrow">{I.out}</span></div>
+                <div className="glass-big">500+</div>
+                <div className="glass-bar"><motion.div initial={{ width: 0 }} animate={{ width: '72%' }} transition={{ delay: 1.4, duration: 1.2, ease: [.22, 1, .36, 1] }} /></div>
+              </motion.div>
+            </motion.div>
+          </section>
+        </Box>
+      );
+    }
+
+    /* ================= ABOUT ================= */
+    function About() {
+      const [active, setActive] = useState(0);
+      return (
+        <Box component="section" id="about" sx={{ py: { xs: 9, md: 12 } }}>
+          <Container maxWidth="lg">
+            <Grid container spacing={6} alignItems="flex-start">
+              <Grid item xs={12} md={6}>
+                <Reveal>
+                  <div className="label label-y" style={{ marginBottom: 12 }}>About</div>
+                  <Typography variant="h2">I build practical, polished software that turns messy workflows into products people can actually use.</Typography>
+                  <Typography color="text.secondary" sx={{ mt: 3, lineHeight: 1.8 }}>
+                    I am a Computer Science student at Stony Brook University and a software engineer in New York. My work sits between the data layer and the user: production PostgreSQL schemas for a paid pharmacy client, AI-driven web apps built as a Headstarter fellow, and a hackathon-winning game with live GPT-4 trivia.
+                  </Typography>
+                  <Typography color="text.secondary" sx={{ mt: 2, lineHeight: 1.8 }}>
+                    At the NYC Department of Education I surveyed 500+ students across the nation's largest school district and presented the findings to the CIO. Outside of work I sketch UML diagrams, tune queries, and occasionally pour tea.
+                  </Typography>
+                </Reveal>
+                <Grid container spacing={2} sx={{ mt: 2 }}>
+                  {HIGHLIGHTS.map((h, i) => (
+                    <Grid item xs={6} key={h.t}>
+                      <Reveal delay={i * .07}>
+                        <motion.div whileHover={{ y: -4 }}>
+                          <Card sx={{ p: 2.5, bgcolor: '#f6f6f4', '&:hover': { borderColor: '#ffd400' } }}>
+                            <Typography sx={{ fontWeight: 800, fontSize: 20, letterSpacing: '-0.02em' }}>{h.t}</Typography>
+                            <Typography variant="body2" color="text.secondary" sx={{ mt: .5 }}>{h.s}</Typography>
+                          </Card>
+                        </motion.div>
+                      </Reveal>
+                    </Grid>
+                  ))}
+                </Grid>
+              </Grid>
+
+              <Grid item xs={12} md={6}>
+                <Reveal delay={.15}>
+                  <Box sx={{ position: 'relative', aspectRatio: '4/5', maxHeight: 640, mx: 'auto', borderRadius: 4, border: '1px solid', borderColor: 'divider', overflow: 'hidden', bgcolor: '#0a0a0a',
+                    '& img': { transition: 'transform .8s cubic-bezier(.22,1,.36,1)' }, '&:hover img': { transform: 'scale(1.035)' } }}>
+                    <AnimatePresence mode="wait">
+                      <motion.img key={active} src={PHOTOS[active].src} alt={PHOTOS[active].caption}
+                        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: .45 }}
+                        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 22%', display: 'block' }} />
+                    </AnimatePresence>
+                    <Box sx={{ position: 'absolute', inset: 0, pointerEvents: 'none', background: 'linear-gradient(180deg, rgba(0,0,0,0) 62%, rgba(0,0,0,.55) 100%)' }} />
+                    <Stack direction="row" alignItems="center" spacing={1} sx={{ position: 'absolute', left: 16, bottom: 16, bgcolor: 'rgba(10,10,10,.72)', backdropFilter: 'blur(8px)', color: '#fff', borderRadius: 999, pl: 1, pr: 1.75, py: .75, border: '1px solid rgba(255,255,255,.12)' }}>
+                      <Box sx={{ width: 8, height: 8, borderRadius: 99, bgcolor: '#ffd400', ml: .5 }} />
+                      <Typography sx={{ fontSize: 13, fontWeight: 700 }}>{PHOTOS[active].caption}</Typography>
+                    </Stack>
+                  </Box>
+                  {PHOTOS.length > 1 && (
+                    <Stack direction="row" spacing={1} sx={{ mt: 1.5 }}>
+                      {PHOTOS.map((ph, i) => (
+                        <motion.button key={ph.src} onClick={() => setActive(i)} whileHover={{ y: -3 }} aria-label={`Show photo: ${ph.caption}`}
+                          style={{ flex: 1, height: 64, padding: 0, borderRadius: 10, overflow: 'hidden', cursor: 'pointer', border: `2px solid ${i === active ? '#ffd400' : '#e6e6e2'}`,
+                            background: `#0a0a0a url(${ph.src}) center 25% / cover no-repeat`, opacity: i === active ? 1 : .7 }} />
+                      ))}
+                    </Stack>
+                  )}
+                </Reveal>
+              </Grid>
+            </Grid>
+          </Container>
+        </Box>
+      );
+    }
+
+    /* ================= NOW ================= */
+    function Now() {
+      const [tick, setTick] = useState(0);
+      useEffect(() => { const t = setInterval(() => setTick(x => x + 1), 1000); return () => clearInterval(t); }, []);
+      const time = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', timeZone: 'America/New_York' });
+      return (
+        <Box component="section" id="now" sx={{ py: { xs: 9, md: 12 }, bgcolor: '#f6f6f4', borderTop: '1px solid', borderBottom: '1px solid', borderColor: 'divider' }}>
+          <Container maxWidth="lg">
+            <SectionHead label="Now" title="A live snapshot of what I am listening to, learning, building, and working on."
+              right={<Chip label={`${time} · New York`} size="small" sx={{ bgcolor: '#0a0a0a', color: '#ffd400' }} />} />
+            <Grid container spacing={2}>
+              {NOW.map((n, i) => (
+                <Grid item xs={12} md={6} key={n.label}>
+                  <Reveal delay={i * .08}>
+                    <motion.div whileHover={{ y: -4 }}>
+                      <Card sx={{ p: 3, height: '100%', '&:hover': { borderColor: '#ffd400' } }}>
+                        <Stack direction="row" justifyContent="space-between" alignItems="center">
+                          <span className="label">{n.label}</span>
+                          {n.tag && <Chip size="small" label={n.tag} sx={{ bgcolor: '#ffd400', color: '#000', height: 22 }} />}
+                        </Stack>
+                        {n.title && <Typography sx={{ mt: 1.5, fontWeight: 800, fontSize: 18 }}>{n.title}</Typography>}
+                        <Typography color="text.secondary" sx={{ mt: n.title ? 1 : 1.5, lineHeight: 1.7 }}>{n.body}</Typography>
+                        {n.label === 'Now listening to' && <Stack direction="row" spacing={.5} sx={{ mt: 2, alignItems: 'flex-end', height: 18 }}>
+                          {[0, 1, 2, 3, 4].map(k => <motion.span key={k} animate={{ height: [4, 14, 6, 16, 4] }} transition={{ repeat: Infinity, duration: 1.4 + k * .2 }} style={{ width: 4, background: '#ffd400', borderRadius: 2 }} />)}
+                        </Stack>}
+                      </Card>
+                    </motion.div>
+                  </Reveal>
+                </Grid>
+              ))}
+            </Grid>
+          </Container>
+        </Box>
+      );
+    }
+
+    /* ================= PROJECTS ================= */
+    function Projects({ onOpen }) {
+      const md = useMediaQuery('(min-width:900px)'), sm = useMediaQuery('(min-width:600px)');
+      const visible = md ? 3 : sm ? 2 : 1;
+      const [i, setI] = useState(0);
+      const max = Math.max(0, PROJECTS.length - visible);
+      const go = d => setI(x => Math.min(max, Math.max(0, x + d)));
+      useEffect(() => { setI(x => Math.min(x, max)); }, [max]);
+      return (
+        <Box component="section" id="projects" sx={{ py: { xs: 9, md: 12 } }}>
+          <Container maxWidth="lg">
+            <SectionHead label="Projects" title="Selected builds across databases, AI, and full-stack engineering." />
+            <Box sx={{ overflow: 'hidden', mx: -1 }}>
+              <motion.div animate={{ x: `${-i * (100 / visible)}%` }} transition={{ type: 'spring', stiffness: 260, damping: 30 }} style={{ display: 'flex' }}>
+                {PROJECTS.map((p, k) => (
+                  <Box key={p.id} sx={{ flex: `0 0 ${100 / visible}%`, px: 1 }}>
+                    <Reveal delay={k * .08} style={{ height: '100%' }}>
+                      <motion.div whileHover={{ y: -6 }} style={{ height: '100%' }}>
+                        <Card className="proj" sx={{ height: '100%', display: 'flex', flexDirection: 'column', cursor: 'pointer', '&:hover': { borderColor: '#ffd400' } }} onClick={() => onOpen(p)}>
+                          <div className="preview"><p.Preview /></div>
+                          <CardContent sx={{ p: 3, flex: 1, display: 'flex', flexDirection: 'column' }}>
+                            <Stack direction="row" justifyContent="space-between" alignItems="center">
+                              <span className="label label-y">{p.tag}</span>
+                              <Chip size="small" label={p.badge} sx={{ bgcolor: p.badge === 'Headstarter' ? '#f0f0ec' : '#ffd400', color: '#000', height: 22, fontSize: 11 }} />
+                            </Stack>
+                            <Typography sx={{ fontWeight: 800, fontSize: 19, mt: 1.5, letterSpacing: '-0.02em' }}>{p.title}</Typography>
+                            <Typography variant="body2" color="text.secondary" sx={{ mt: 1, lineHeight: 1.7 }}>{p.desc}</Typography>
+                            <Stack direction="row" flexWrap="wrap" gap={.75} sx={{ mt: 2 }}>
+                              {p.stack.map(s => <Chip key={s} size="small" label={s} variant="outlined" sx={{ height: 24, fontSize: 11 }} />)}
+                            </Stack>
+                            <Stack direction="row" spacing={1} sx={{ mt: 'auto', pt: 2.5 }} onClick={e => e.stopPropagation()}>
+                              <Button variant="contained" size="small" onClick={() => onOpen(p)}>View details</Button>
+                              {p.code ? <Button variant="outlined" color="secondary" size="small" href={p.code} target="_blank" rel="noopener" endIcon={I.out}>View code</Button>
+                                : <Button variant="outlined" color="secondary" size="small" disabled>Code private</Button>}
+                            </Stack>
+                          </CardContent>
+                        </Card>
+                      </motion.div>
+                    </Reveal>
+                  </Box>
+                ))}
+              </motion.div>
+            </Box>
+            <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mt: 3 }}>
+              <IconButton onClick={() => go(-1)} disabled={i === 0} sx={{ border: '1px solid', borderColor: 'divider' }}>{I.left}</IconButton>
+              <Stack direction="row" spacing={.75}>
+                {Array.from({ length: max + 1 }).map((_, k) => (
+                  <motion.button key={k} onClick={() => setI(k)} animate={{ width: k === i ? 22 : 8, background: k === i ? '#ffd400' : '#e6e6e2' }}
+                    style={{ height: 8, borderRadius: 999, border: 0, padding: 0, cursor: 'pointer' }} aria-label={`Slide ${k + 1}`} />
+                ))}
+              </Stack>
+              <IconButton onClick={() => go(1)} disabled={i === max} sx={{ border: '1px solid', borderColor: 'divider' }}>{I.right}</IconButton>
+            </Stack>
+          </Container>
+        </Box>
+      );
+    }
+
+    function ProjectDialog({ p, onClose, onContact }) {
+      return (
+        <Dialog open={!!p} onClose={onClose} maxWidth="md" fullWidth PaperProps={{ sx: { borderRadius: 4 } }}>
+          {p && (
+            <DialogContent sx={{ p: { xs: 3, md: 5 } }}>
+              <IconButton onClick={onClose} sx={{ position: 'absolute', top: 14, right: 14 }} aria-label="Close">{I.x}</IconButton>
+              <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
+                <Chip size="small" label={p.badge} sx={{ bgcolor: '#ffd400', color: '#000' }} />
+                <Chip size="small" label={p.tag} variant="outlined" />
+                <span className="label">{p.date}</span>
+              </Stack>
+              <Typography variant="h2" sx={{ mt: 2, pr: 5 }}>{p.title}</Typography>
+              <Typography color="text.secondary" sx={{ mt: 1 }}>{p.desc}</Typography>
+              <Box sx={{ mt: 3, borderRadius: 3, overflow: 'hidden', border: '1px solid', borderColor: 'divider' }}><div className="preview" style={{ borderBottom: 0 }}><p.Preview /></div></Box>
+              <div className="label label-y" style={{ marginTop: 32, marginBottom: 12 }}>Impact</div>
+              <Stack spacing={1.25}>{p.highlights.map(h => <Stack key={h} direction="row" spacing={1.5}><Box sx={{ mt: 1.1, width: 6, height: 6, borderRadius: 99, bgcolor: '#ffd400', flexShrink: 0 }} /><Typography>{h}</Typography></Stack>)}</Stack>
+              <div className="label label-y" style={{ marginTop: 32, marginBottom: 12 }}>Architecture</div>
+              <Grid container spacing={1.5}>
+                {p.arch.map(([t, b], k) => (
+                  <Grid item xs={12} sm={6} key={t}>
+                    <Card sx={{ p: 2.5, height: '100%', bgcolor: '#f6f6f4', '&:hover': { borderColor: '#ffd400' } }}>
+                      <span className="label">0{k + 1}</span>
+                      <Typography sx={{ fontWeight: 700, mt: .5 }}>{t}</Typography>
+                      <Typography variant="body2" color="text.secondary" sx={{ mt: .75, lineHeight: 1.7 }}>{b}</Typography>
+                    </Card>
+                  </Grid>
+                ))}
+              </Grid>
+              <Stack direction="row" spacing={1} sx={{ mt: 4 }} flexWrap="wrap">
+                {p.code && <Button variant="contained" href={p.code} target="_blank" rel="noopener" endIcon={I.out}>View code</Button>}
+                <Button variant="outlined" color="secondary" onClick={() => { onClose(); onContact(); }}>Ask me about this</Button>
+              </Stack>
+            </DialogContent>
+          )}
+        </Dialog>
+      );
+    }
+
+    /* ================= STACK ================= */
+    function StackSection() {
+      const [q, setQ] = useState('');
+      return (
+        <Box component="section" id="stack" sx={{ py: { xs: 9, md: 12 }, bgcolor: '#f6f6f4', borderTop: '1px solid', borderBottom: '1px solid', borderColor: 'divider' }}>
+          <Container maxWidth="lg">
+            <SectionHead label="Stack" title="Tools I use to build across interfaces, data, systems, and AI-assisted workflows."
+              right={<TextField size="small" placeholder="Filter skills…" value={q} onChange={e => setQ(e.target.value)} sx={{ width: { xs: '100%', md: 240 }, '& .MuiOutlinedInput-root': { borderRadius: 999, bgcolor: '#fff' } }} />} />
+            <Stack spacing={4}>
+              {Object.entries(STACK).map(([group, items], gi) => {
+                const list = items.filter(s => s.n.toLowerCase().includes(q.toLowerCase()));
+                if (!list.length) return null;
+                return (
+                  <Reveal key={group} delay={gi * .06}>
+                    <Typography sx={{ fontWeight: 800, mb: 1.5 }}>{group}</Typography>
+                    <Stack direction="row" flexWrap="wrap" gap={1}>
+                      {list.map(s => (
+                        <motion.div key={s.n} whileHover={{ y: -3, scale: 1.03 }} whileTap={{ scale: .97 }}>
+                          <Chip label={s.n} icon={<Box sx={{ ml: '6px !important', width: 22, height: 22, borderRadius: 99, bgcolor: '#f0f0ec', display: 'grid', placeItems: 'center' }}><TechIcon item={s} /></Box>}
+                            sx={{ bgcolor: '#fff', border: '1px solid', borderColor: 'divider', pl: 0, pr: .5, height: 36, '&:hover': { borderColor: '#ffd400', bgcolor: '#fffbe0' } }} />
+                        </motion.div>
+                      ))}
+                    </Stack>
+                  </Reveal>
+                );
+              })}
+            </Stack>
+          </Container>
+        </Box>
+      );
+    }
+
+    /* ================= RESUME ================= */
+    function Resume() {
+      return (
+        <Box component="section" id="resume" sx={{ py: { xs: 9, md: 12 } }}>
+          <Container maxWidth="lg">
+            <SectionHead label="Resume" title="Experience, education, and the teams that shaped how I build."
+              right={<Button variant="contained" href={PROFILE.resume} target="_blank" rel="noopener" endIcon={I.out}>View resume (PDF)</Button>} />
+            <Grid container spacing={4}>
+              <Grid item xs={12} md={7}>
+                <Typography sx={{ fontWeight: 800, mb: 2 }}>Experience</Typography>
+                <Stack spacing={2}>
+                  {EXPERIENCE.map((x, i) => (
+                    <Reveal key={x.role + x.when} delay={i * .06}>
+                      <motion.div whileHover={{ x: 4 }}>
+                        <Card sx={{ p: 3, bgcolor: '#f6f6f4', '&:hover': { borderColor: '#ffd400' } }}>
+                          <Stack direction="row" justifyContent="space-between" alignItems="flex-start" spacing={2}>
+                            <Box><span className="label label-y">{x.org}</span><Typography sx={{ fontWeight: 800, mt: .5 }}>{x.role}</Typography></Box>
+                            <Chip size="small" label={x.when} sx={{ bgcolor: '#0a0a0a', color: '#ffd400', flexShrink: 0 }} />
+                          </Stack>
+                          <Stack spacing={.75} sx={{ mt: 1.5 }}>
+                            {x.bullets.map(b => <Stack key={b} direction="row" spacing={1.25}><Box sx={{ mt: 1, width: 5, height: 5, borderRadius: 99, bgcolor: '#ffd400', flexShrink: 0 }} /><Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.7 }}>{b}</Typography></Stack>)}
+                          </Stack>
+                        </Card>
+                      </motion.div>
+                    </Reveal>
+                  ))}
+                </Stack>
+              </Grid>
+              <Grid item xs={12} md={5}>
+                <Typography sx={{ fontWeight: 800, mb: 2 }}>Education</Typography>
+                <Reveal delay={.1}>
+                  <Card sx={{ p: 3, bgcolor: '#f6f6f4', '&:hover': { borderColor: '#ffd400' } }}>
+                    <Stack direction="row" justifyContent="space-between" alignItems="flex-start" spacing={2}>
+                      <Box><span className="label label-y">{EDUCATION.school}</span><Typography sx={{ fontWeight: 800, mt: .5 }}>{EDUCATION.degree}</Typography></Box>
+                      <Chip size="small" label={EDUCATION.when} sx={{ bgcolor: '#0a0a0a', color: '#ffd400', flexShrink: 0 }} />
+                    </Stack>
+                    <Box sx={{ mt: 2 }}>
+                      <Stack direction="row" justifyContent="space-between"><Typography variant="body2" sx={{ fontWeight: 700 }}>GPA 3.67 / 4.00</Typography><Typography variant="body2" color="text.secondary">92%</Typography></Stack>
+                      <LinearProgress variant="determinate" value={92} sx={{ mt: .75, height: 6, borderRadius: 99, bgcolor: '#e6e6e2', '& .MuiLinearProgress-bar': { bgcolor: '#ffd400' } }} />
+                    </Box>
+                    <Stack spacing={.75} sx={{ mt: 2 }}>
+                      {EDUCATION.bullets.map(b => <Stack key={b} direction="row" spacing={1.25}><Box sx={{ mt: 1, width: 5, height: 5, borderRadius: 99, bgcolor: '#ffd400', flexShrink: 0 }} /><Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.7 }}>{b}</Typography></Stack>)}
+                    </Stack>
+                  </Card>
+                </Reveal>
+              </Grid>
+            </Grid>
+          </Container>
+        </Box>
+      );
+    }
+
+    /* ================= CONTACT ================= */
+    function Contact({ notify }) {
+      const [v, setV] = useState({ name: '', email: '', subject: '', message: '' });
+      const [err, setErr] = useState({}); const [busy, setBusy] = useState(false);
+      const rules = {
+        name: x => x.trim().length >= 2 || 'Please enter your name (at least 2 characters).',
+        email: x => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(x.trim()) || 'Email must include an @ and a domain.',
+        subject: x => x.trim().length >= 2 || 'Please add a short subject.',
+        message: x => x.trim().length >= 10 || 'Message should be at least 10 characters.',
+      };
+      const check = k => { const r = rules[k](v[k]); setErr(e => ({ ...e, [k]: r === true ? '' : r })); return r === true; };
+      const submit = e => {
+        e.preventDefault();
+        const ok = Object.keys(rules).map(check).every(Boolean);
+        if (!ok) { notify('Fix the highlighted fields and try again.', 'error'); return; }
+        setBusy(true);
+        setTimeout(() => {
+          const body = `${v.message}\n\n— ${v.name} (${v.email})`;
+          window.location.href = `mailto:${PROFILE.email}?subject=${encodeURIComponent(v.subject)}&body=${encodeURIComponent(body)}`;
+          notify(`Thanks ${v.name.split(' ')[0]}. Your mail client should open now.`, 'success');
+          setV({ name: '', email: '', subject: '', message: '' }); setErr({}); setBusy(false);
+        }, 700);
+      };
+      const f = (k, label, extra = {}) => (
+        <TextField label={label} value={v[k]} onChange={e => setV({ ...v, [k]: e.target.value })} onBlur={() => check(k)}
+          error={!!err[k]} helperText={err[k] || ' '} {...extra} />
+      );
+      return (
+        <Box component="section" id="contact" sx={{ py: { xs: 9, md: 12 }, bgcolor: '#0a0a0a', color: '#fff' }}>
+          <Container maxWidth="lg">
+            <Grid container spacing={6}>
+              <Grid item xs={12} md={5}>
+                <Reveal>
+                  <div className="label" style={{ color: '#ffd400', marginBottom: 12 }}>Contact</div>
+                  <Typography variant="h2" sx={{ color: '#fff' }}>Let's talk.</Typography>
+                  <Typography sx={{ mt: 2.5, color: 'rgba(255,255,255,.65)', lineHeight: 1.8 }}>Internship, freelance database work, or a hackathon team. My inbox is open.</Typography>
+                  <Stack sx={{ mt: 4 }} spacing={0}>
+                    {[[PROFILE.email, `mailto:${PROFILE.email}`], [PROFILE.phone, `tel:${PROFILE.phone.replace(/-/g, '')}`], ['ryanchen.xyz', PROFILE.site], ['linkedin.com/in/ryanchen07', PROFILE.linkedin], ['github.com/ryan-c07', PROFILE.github]].map(([t, h]) => (
+                      <motion.a key={t} href={h} target={h.startsWith('http') ? '_blank' : undefined} rel="noopener" whileHover={{ x: 4 }}
+                        style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 0', borderBottom: '1px solid rgba(255,255,255,.12)', color: '#fff', textDecoration: 'none', fontWeight: 600 }}>
+                        <span>{t}</span><span style={{ color: '#ffd400' }}>{I.out}</span>
+                      </motion.a>
+                    ))}
+                  </Stack>
+                </Reveal>
+              </Grid>
+              <Grid item xs={12} md={7}>
+                <Reveal delay={.1}>
+                  <Card component="form" noValidate onSubmit={submit} sx={{ p: { xs: 3, md: 4 }, bgcolor: '#fff' }}>
+                    <Grid container spacing={2}>
+                      <Grid item xs={12} sm={6}>{f('name', 'Name')}</Grid>
+                      <Grid item xs={12} sm={6}>{f('email', 'Email', { type: 'email' })}</Grid>
+                      <Grid item xs={12}>{f('subject', 'Subject')}</Grid>
+                      <Grid item xs={12}>{f('message', 'Message', { multiline: true, minRows: 4 })}</Grid>
+                    </Grid>
+                    <Button type="submit" variant="contained" size="large" fullWidth disabled={busy} sx={{ mt: 1 }}>{busy ? 'Sending…' : 'Send message'}</Button>
+                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', textAlign: 'center', mt: 1.5 }}>Opens your mail client with the message pre-filled.</Typography>
+                  </Card>
+                </Reveal>
+              </Grid>
+            </Grid>
+          </Container>
+        </Box>
+      );
+    }
+
+    /* ================= APP ================= */
+    function App() {
+      const [proj, setProj] = useState(null);
+      const [snack, setSnack] = useState(null);
+      const notify = (msg, type = 'success') => setSnack({ msg, type });
+      const toContact = () => document.getElementById('contact').scrollIntoView({ behavior: 'smooth' });
+      return (
+        <ThemeProvider theme={theme}>
+          <CssBaseline />
+          <Hero onContact={toContact} />
+          <About />
+          <Now />
+          <Projects onOpen={setProj} />
+          <StackSection />
+          <Resume />
+          <Contact notify={notify} />
+          <Box component="footer" sx={{ bgcolor: '#0a0a0a', color: 'rgba(255,255,255,.5)', py: 3, borderTop: '1px solid rgba(255,255,255,.1)', textAlign: 'center', fontSize: 13 }}>
+            © {new Date().getFullYear()} {PROFILE.name} · Made with <span style={{ color: '#ffd400' }}>♥</span> using React &amp; Material UI
+          </Box>
+          <ProjectDialog p={proj} onClose={() => setProj(null)} onContact={toContact} />
+          <Snackbar open={!!snack} autoHideDuration={4500} onClose={() => setSnack(null)} anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}>
+            {snack && <Alert onClose={() => setSnack(null)} severity={snack.type} variant="filled" sx={{ borderRadius: 3, bgcolor: snack.type === 'success' ? '#ffd400' : undefined, color: snack.type === 'success' ? '#000' : undefined, fontWeight: 600 }}>{snack.msg}</Alert>}
+          </Snackbar>
+        </ThemeProvider>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
