@@ -59,6 +59,31 @@
     .ans { border:1px solid #333; border-radius:8px; padding:6px 8px; margin-top:6px; }
     .ans.ok { background:var(--yellow); color:#000; border-color:var(--yellow); font-weight:700; }
 
+    /* Floating dock nav */
+    .dock { position:fixed; top:14px; left:50%; z-index:1200; display:flex; align-items:center; gap:4px; padding:6px; border-radius:999px;
+      background:rgba(10,10,10,.74); backdrop-filter:blur(14px) saturate(140%); -webkit-backdrop-filter:blur(14px) saturate(140%);
+      border:1px solid rgba(255,255,255,.12); box-shadow:0 14px 40px -14px rgba(0,0,0,.5); }
+    .dock-avatar { width:34px; height:34px; border-radius:999px; overflow:hidden; margin-right:4px; flex-shrink:0; border:2px solid #ffd400; display:block; }
+    .dock-avatar img { width:100%; height:100%; object-fit:cover; object-position:center 18%; display:block; }
+    .dock-link { position:relative; border:0; background:none; color:rgba(255,255,255,.72); font:600 13.5px Manrope, system-ui, sans-serif;
+      padding:8px 14px; border-radius:999px; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; gap:4px; transition:color .2s; white-space:nowrap; }
+    .dock-link:hover { color:#fff; }
+    .dock-link[data-active="true"] { color:#000; }
+    .dock-pill { position:absolute; inset:0; background:#ffd400; border-radius:999px; }
+    .dock-cta { margin-left:4px; background:#fff; color:#000; border:0; font:700 13.5px Manrope, system-ui, sans-serif; padding:8px 16px; border-radius:999px; cursor:pointer; transition:background .2s; white-space:nowrap; }
+    .dock-cta:hover { background:#ffd400; }
+    @media (max-width:599px) { .dock-avatar, .dock-cta { display:none; } .dock-link { padding:8px 10px; font-size:13px; } }
+
+    /* Logo marquee */
+    .marquee { overflow:hidden; -webkit-mask-image:linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent); mask-image:linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent); }
+    .marquee-track { display:flex; width:max-content; animation:marquee 45s linear infinite; }
+    .marquee:hover .marquee-track { animation-play-state:paused; }
+    @keyframes marquee { to { transform:translateX(-50%); } }
+    @media (prefers-reduced-motion: reduce) { .marquee-track { animation:none; } }
+
+    .pulse { width:7px; height:7px; border-radius:99px; background:#ffd400; display:inline-block; box-shadow:0 0 0 0 rgba(255,212,0,.7); animation:pulse 2s infinite; }
+    @keyframes pulse { 70% { box-shadow:0 0 0 7px rgba(255,212,0,0); } 100% { box-shadow:0 0 0 0 rgba(255,212,0,0); } }
+
     .grid-bg { background-image: linear-gradient(var(--line) 1px, transparent 1px), linear-gradient(90deg, var(--line) 1px, transparent 1px); background-size: 40px 40px; }
   </style>
 </head>
@@ -71,7 +96,7 @@
       ThemeProvider, createTheme, CssBaseline, Box, Container, Typography, Button, Chip, IconButton, Avatar, Stack, Grid,
       Card, CardContent, Dialog, DialogContent, TextField, Snackbar, Alert, Tooltip, useMediaQuery, Divider, LinearProgress,
     } = MaterialUI;
-    const { motion, AnimatePresence } = Motion;
+    const { motion, AnimatePresence, useScroll, useSpring, useMotionValue, useMotionTemplate, useInView } = Motion;
 
     /* ================= THEME ================= */
     const theme = createTheme({
@@ -221,6 +246,10 @@
       ],
     };
 
+    // Everything except certifications, de-duplicated by name, for the scrolling logo strip.
+    const MARQUEE_ITEMS = Object.entries(STACK).filter(([g]) => g !== 'Certifications').flatMap(([, v]) => v)
+      .filter((s, i, a) => a.findIndex(o => o.n === s.n) === i);
+
     const TechIcon = ({ item, size = 16 }) => item.icon
       ? <img src={`https://cdn.simpleicons.org/${item.icon}/111111`} alt="" width={size} height={size} loading="lazy" style={{ display: 'block' }} />
       : <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: '-.02em', lineHeight: 1 }}>{item.mono}</span>;
@@ -273,6 +302,66 @@
         </Stack>
       </Reveal>
     );
+
+    // Card with a yellow glow that follows the cursor across the surface and along the border.
+    function SpotlightCard({ children, bg = '#fff', innerSx, sx, glow = .16, ...rest }) {
+      const mx = useMotionValue(-500), my = useMotionValue(-500);
+      const surface = useMotionTemplate`radial-gradient(380px circle at ${mx}px ${my}px, rgba(255,212,0,${glow}), transparent 70%)`;
+      const edge = useMotionTemplate`radial-gradient(260px circle at ${mx}px ${my}px, rgba(255,212,0,.95), transparent 70%)`;
+      const move = e => { const r = e.currentTarget.getBoundingClientRect(); mx.set(e.clientX - r.left); my.set(e.clientY - r.top); };
+      const leave = () => { mx.set(-500); my.set(-500); };
+      return (
+        <Box onMouseMove={move} onMouseLeave={leave} {...rest}
+          sx={{ position: 'relative', height: '100%', borderRadius: '17px', p: '1px', bgcolor: bg === '#0a0a0a' ? '#262626' : '#e6e6e2', overflow: 'hidden', ...sx }}>
+          <motion.div aria-hidden style={{ position: 'absolute', inset: 0, background: edge }} />
+          <Box sx={{ position: 'relative', height: '100%', borderRadius: '16px', bgcolor: bg, overflow: 'hidden' }}>
+            <motion.div aria-hidden style={{ position: 'absolute', inset: 0, background: surface, pointerEvents: 'none' }} />
+            <Box sx={{ position: 'relative', height: '100%', ...innerSx }}>{children}</Box>
+          </Box>
+        </Box>
+      );
+    }
+
+    // Floating pill navigation that appears once the hero is scrolled past.
+    function FloatingNav({ onContact }) {
+      const links = [['About', 'about'], ['Now', 'now'], ['Projects', 'projects'], ['Stack', 'stack']];
+      const [show, setShow] = useState(false), [active, setActive] = useState('');
+      useEffect(() => {
+        const onScroll = () => {
+          setShow(window.scrollY > window.innerHeight * .75);
+          let cur = '';
+          ['about', 'now', 'projects', 'stack', 'resume', 'contact'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el && el.getBoundingClientRect().top < window.innerHeight * .4) cur = id;
+          });
+          setActive(cur);
+        };
+        onScroll(); window.addEventListener('scroll', onScroll, { passive: true });
+        return () => window.removeEventListener('scroll', onScroll);
+      }, []);
+      const go = id => { const el = document.getElementById(id); el && el.scrollIntoView({ behavior: 'smooth', block: 'start' }); };
+      return (
+        <AnimatePresence>
+          {show && (
+            <motion.nav className="dock" aria-label="Section navigation"
+              initial={{ y: -80, opacity: 0, x: '-50%' }} animate={{ y: 0, opacity: 1, x: '-50%' }} exit={{ y: -80, opacity: 0, x: '-50%' }}
+              transition={{ type: 'spring', stiffness: 320, damping: 30 }}>
+              <a className="dock-avatar" href="#top" onClick={e => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); }} aria-label="Back to top">
+                <img src={PHOTOS[0].src} alt="" />
+              </a>
+              {links.map(([t, id]) => (
+                <button key={id} className="dock-link" data-active={active === id} onClick={() => go(id)}>
+                  {active === id && <motion.span layoutId="dock-pill" className="dock-pill" transition={{ type: 'spring', stiffness: 420, damping: 34 }} />}
+                  <span style={{ position: 'relative' }}>{t}</span>
+                </button>
+              ))}
+              <a className="dock-link" href={PROFILE.resume} target="_blank" rel="noopener">Resume{I.out}</a>
+              <button className="dock-cta" onClick={onContact}>Let's talk</button>
+            </motion.nav>
+          )}
+        </AnimatePresence>
+      );
+    }
 
     function useTypewriter(words, speed = 55, pause = 1600) {
       const [i, setI] = useState(0), [txt, setTxt] = useState(''), [del, setDel] = useState(false);
@@ -573,28 +662,31 @@
         <Box component="section" id="now" sx={{ py: { xs: 9, md: 12 }, bgcolor: '#f6f6f4', borderTop: '1px solid', borderBottom: '1px solid', borderColor: 'divider' }}>
           <Container maxWidth="lg">
             <SectionHead label="Now" title="A live snapshot of what I am listening to, learning, building, and working on."
-              right={<Chip label={`${time} · New York`} size="small" sx={{ bgcolor: '#0a0a0a', color: '#ffd400' }} />} />
-            <Grid container spacing={2}>
-              {NOW.map((n, i) => (
-                <Grid item xs={12} md={6} key={n.label}>
-                  <Reveal delay={i * .08}>
-                    <motion.div whileHover={{ y: -4 }}>
-                      <Card sx={{ p: 3, height: '100%', '&:hover': { borderColor: '#ffd400' } }}>
+              right={<Chip icon={<span className="pulse" style={{ marginLeft: 10 }} />} label={`${time} · New York`} size="small" sx={{ bgcolor: '#0a0a0a', color: '#ffd400', pl: .25 }} />} />
+            <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' } }}>
+              {NOW.map((n, i) => {
+                const wide = i === 1 || i === 2;          // bento: 1 + 2 on the first row, 2 + 1 on the second
+                const dark = i === 1;                     // the "working on" tile is the dark feature tile
+                return (
+                  <Box key={n.label} sx={{ gridColumn: { md: wide ? 'span 2' : 'span 1' } }}>
+                    <Reveal delay={i * .08} style={{ height: '100%' }}>
+                      <SpotlightCard bg={dark ? '#0a0a0a' : '#fff'} glow={dark ? .12 : .18} innerSx={{ p: 3, minHeight: 190, display: 'flex', flexDirection: 'column' }}>
                         <Stack direction="row" justifyContent="space-between" alignItems="center">
-                          <span className="label">{n.label}</span>
+                          <span className="label" style={dark ? { color: 'rgba(255,255,255,.55)' } : undefined}>{n.label}</span>
                           {n.tag && <Chip size="small" label={n.tag} sx={{ bgcolor: '#ffd400', color: '#000', height: 22 }} />}
+                          {dark && <Stack direction="row" spacing={1} alignItems="center"><span className="pulse" /><Typography sx={{ color: '#ffd400', fontSize: 12, fontWeight: 700 }}>In progress</Typography></Stack>}
                         </Stack>
-                        {n.title && <Typography sx={{ mt: 1.5, fontWeight: 800, fontSize: 18 }}>{n.title}</Typography>}
-                        <Typography color="text.secondary" sx={{ mt: n.title ? 1 : 1.5, lineHeight: 1.7 }}>{n.body}</Typography>
-                        {n.label === 'Now listening to' && <Stack direction="row" spacing={.5} sx={{ mt: 2, alignItems: 'flex-end', height: 18 }}>
+                        {n.title && <Typography sx={{ mt: 2, fontWeight: 800, fontSize: dark ? 26 : 19, letterSpacing: '-0.02em', color: dark ? '#fff' : 'inherit', lineHeight: 1.2 }}>{n.title}</Typography>}
+                        <Typography sx={{ mt: n.title ? 1.25 : 1.5, lineHeight: 1.7, color: dark ? 'rgba(255,255,255,.7)' : 'text.secondary', maxWidth: 560 }}>{n.body}</Typography>
+                        {n.label === 'Now listening to' && <Stack direction="row" spacing={.5} sx={{ mt: 'auto', pt: 2, alignItems: 'flex-end', height: 34 }}>
                           {[0, 1, 2, 3, 4].map(k => <motion.span key={k} animate={{ height: [4, 14, 6, 16, 4] }} transition={{ repeat: Infinity, duration: 1.4 + k * .2 }} style={{ width: 4, background: '#ffd400', borderRadius: 2 }} />)}
                         </Stack>}
-                      </Card>
-                    </motion.div>
-                  </Reveal>
-                </Grid>
-              ))}
-            </Grid>
+                      </SpotlightCard>
+                    </Reveal>
+                  </Box>
+                );
+              })}
+            </Box>
           </Container>
         </Box>
       );
@@ -618,7 +710,7 @@
                   <Box key={p.id} sx={{ flex: `0 0 ${100 / visible}%`, px: 1 }}>
                     <Reveal delay={k * .08} style={{ height: '100%' }}>
                       <motion.div whileHover={{ y: -6 }} style={{ height: '100%' }}>
-                        <Card className="proj" sx={{ height: '100%', display: 'flex', flexDirection: 'column', cursor: 'pointer', '&:hover': { borderColor: '#ffd400' } }} onClick={() => onOpen(p)}>
+                        <SpotlightCard className="proj" onClick={() => onOpen(p)} sx={{ cursor: 'pointer' }} innerSx={{ display: 'flex', flexDirection: 'column' }}>
                           <div className="preview"><p.Preview /></div>
                           <CardContent sx={{ p: 3, flex: 1, display: 'flex', flexDirection: 'column' }}>
                             <Stack direction="row" justifyContent="space-between" alignItems="center">
@@ -636,7 +728,7 @@
                                 : <Button variant="outlined" color="secondary" size="small" disabled>Code private</Button>}
                             </Stack>
                           </CardContent>
-                        </Card>
+                        </SpotlightCard>
                       </motion.div>
                     </Reveal>
                   </Box>
@@ -704,6 +796,19 @@
           <Container maxWidth="lg">
             <SectionHead label="Stack" title="Tools I use to build across interfaces, data, systems, and AI-assisted workflows."
               right={<TextField size="small" placeholder="Filter skills…" value={q} onChange={e => setQ(e.target.value)} sx={{ width: { xs: '100%', md: 240 }, '& .MuiOutlinedInput-root': { borderRadius: 999, bgcolor: '#fff' } }} />} />
+            <Reveal>
+              <Box className="marquee" sx={{ mb: 6, py: 1.5, borderTop: '1px solid', borderBottom: '1px solid', borderColor: 'divider' }}>
+                <div className="marquee-track">
+                  {[0, 1].map(copy => MARQUEE_ITEMS.map(s => (
+                    <Stack key={copy + s.n} direction="row" alignItems="center" spacing={1.25} aria-hidden={copy === 1}
+                      sx={{ px: 3.5, flexShrink: 0, opacity: .7, transition: 'opacity .2s', '&:hover': { opacity: 1 } }}>
+                      <TechIcon item={s} size={22} />
+                      <Typography sx={{ fontWeight: 700, fontSize: 15, whiteSpace: 'nowrap' }}>{s.n}</Typography>
+                    </Stack>
+                  )))}
+                </div>
+              </Box>
+            </Reveal>
             <Stack spacing={4}>
               {Object.entries(STACK).map(([group, items], gi) => {
                 const list = items.filter(s => s.n.toLowerCase().includes(q.toLowerCase()));
@@ -729,6 +834,42 @@
     }
 
     /* ================= RESUME ================= */
+    // Vertical timeline whose yellow line fills as you scroll; each dot lights up as its role reaches the middle of the screen.
+    function ExperienceTimeline() {
+      const ref = useRef(null);
+      const { scrollYProgress } = useScroll({ target: ref, offset: ['start 70%', 'end 55%'] });
+      const fill = useSpring(scrollYProgress, { stiffness: 140, damping: 30, restDelta: .001 });
+      return (
+        <Box ref={ref} sx={{ position: 'relative', pl: 5 }}>
+          <Box sx={{ position: 'absolute', left: 11, top: 10, bottom: 10, width: 2, bgcolor: 'divider', borderRadius: 2 }} />
+          <motion.div aria-hidden style={{ position: 'absolute', left: 11, top: 10, bottom: 10, width: 2, background: '#ffd400', borderRadius: 2, transformOrigin: 'top', scaleY: fill }} />
+          <Stack spacing={2.5}>{EXPERIENCE.map(x => <TimelineItem key={x.role + x.when} x={x} />)}</Stack>
+        </Box>
+      );
+    }
+
+    function TimelineItem({ x }) {
+      const ref = useRef(null);
+      const lit = useInView(ref, { margin: '0px 0px -45% 0px' });
+      return (
+        <Box ref={ref} sx={{ position: 'relative' }}>
+          <motion.span aria-hidden animate={{ backgroundColor: lit ? '#ffd400' : '#ffffff', borderColor: lit ? '#0a0a0a' : '#d6d6d2', scale: lit ? 1 : .8 }}
+            transition={{ duration: .35 }} style={{ position: 'absolute', left: -36, top: 22, width: 16, height: 16, borderRadius: 99, border: '2px solid', boxShadow: lit ? '0 0 0 5px rgba(255,212,0,.22)' : 'none' }} />
+          <Reveal>
+            <SpotlightCard bg="#fafaf8" innerSx={{ p: 3 }}>
+              <Stack direction="row" justifyContent="space-between" alignItems="flex-start" spacing={2}>
+                <Box><span className="label label-y">{x.org}</span><Typography sx={{ fontWeight: 800, mt: .5 }}>{x.role}</Typography></Box>
+                <Chip size="small" label={x.when} sx={{ bgcolor: '#0a0a0a', color: '#ffd400', flexShrink: 0 }} />
+              </Stack>
+              <Stack spacing={.75} sx={{ mt: 1.5 }}>
+                {x.bullets.map(b => <Stack key={b} direction="row" spacing={1.25}><Box sx={{ mt: 1, width: 5, height: 5, borderRadius: 99, bgcolor: '#ffd400', flexShrink: 0 }} /><Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.7 }}>{b}</Typography></Stack>)}
+              </Stack>
+            </SpotlightCard>
+          </Reveal>
+        </Box>
+      );
+    }
+
     function Resume() {
       return (
         <Box component="section" id="resume" sx={{ py: { xs: 9, md: 12 } }}>
@@ -738,23 +879,7 @@
             <Grid container spacing={4}>
               <Grid item xs={12} md={7}>
                 <Typography sx={{ fontWeight: 800, mb: 2 }}>Experience</Typography>
-                <Stack spacing={2}>
-                  {EXPERIENCE.map((x, i) => (
-                    <Reveal key={x.role + x.when} delay={i * .06}>
-                      <motion.div whileHover={{ x: 4 }}>
-                        <Card sx={{ p: 3, bgcolor: '#f6f6f4', '&:hover': { borderColor: '#ffd400' } }}>
-                          <Stack direction="row" justifyContent="space-between" alignItems="flex-start" spacing={2}>
-                            <Box><span className="label label-y">{x.org}</span><Typography sx={{ fontWeight: 800, mt: .5 }}>{x.role}</Typography></Box>
-                            <Chip size="small" label={x.when} sx={{ bgcolor: '#0a0a0a', color: '#ffd400', flexShrink: 0 }} />
-                          </Stack>
-                          <Stack spacing={.75} sx={{ mt: 1.5 }}>
-                            {x.bullets.map(b => <Stack key={b} direction="row" spacing={1.25}><Box sx={{ mt: 1, width: 5, height: 5, borderRadius: 99, bgcolor: '#ffd400', flexShrink: 0 }} /><Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.7 }}>{b}</Typography></Stack>)}
-                          </Stack>
-                        </Card>
-                      </motion.div>
-                    </Reveal>
-                  ))}
-                </Stack>
+                <ExperienceTimeline />
               </Grid>
               <Grid item xs={12} md={5}>
                 <Typography sx={{ fontWeight: 800, mb: 2 }}>Education</Typography>
@@ -855,6 +980,7 @@
       return (
         <ThemeProvider theme={theme}>
           <CssBaseline />
+          <FloatingNav onContact={toContact} />
           <Hero onContact={toContact} />
           <About />
           <Now />
