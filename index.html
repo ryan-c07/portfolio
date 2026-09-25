@@ -47,17 +47,15 @@
     .label { font-size:11px; font-weight:700; letter-spacing:.16em; text-transform:uppercase; color:var(--mute); }
     .label-y { color:#9a7f00; }
 
-    /* Project preview mock UIs */
-    .preview { height:200px; border-bottom:1px solid var(--line); background:var(--paper2); position:relative; overflow:hidden; }
-    .mock { position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); transition: transform .5s cubic-bezier(.22,1,.36,1); }
-    .proj:hover .mock { transform:translate(-50%,-50%) scale(1.04); }
-    .mock-dark { background:#111; color:#fff; border-radius:12px; padding:14px; width:260px; box-shadow:0 20px 40px -20px rgba(0,0,0,.4); font-size:11px; }
-    .mock-light { background:#fff; color:#111; border:1px solid var(--line); border-radius:12px; padding:14px; width:260px; box-shadow:0 20px 40px -20px rgba(0,0,0,.25); font-size:11px; }
-    .row { display:flex; justify-content:space-between; align-items:center; padding:5px 0; border-bottom:1px solid rgba(128,128,128,.18); }
-    .row:last-child { border-bottom:0; }
-    .dot { display:inline-block; width:6px; height:6px; border-radius:999px; background:var(--yellow); margin-right:6px; }
-    .ans { border:1px solid #333; border-radius:8px; padding:6px 8px; margin-top:6px; }
-    .ans.ok { background:var(--yellow); color:#000; border-color:var(--yellow); font-weight:700; }
+    /* Project previews (real screenshots) */
+    .preview { height:210px; border-bottom:1px solid var(--line); background:var(--paper2); position:relative; overflow:hidden; }
+    .preview img { transition: transform .6s cubic-bezier(.22,1,.36,1); }
+    .proj:hover .preview img { transform: scale(1.04); }
+    .preview .shot { position:absolute; inset:0; width:100%; height:100%; display:block; }
+    .preview-duo { background:#fbeee9; }
+    .duo-desktop { position:absolute; left:5%; top:16%; width:74%; border-radius:10px; box-shadow:0 18px 40px -18px rgba(0,0,0,.35); display:block; }
+    .duo-phone { position:absolute; right:6%; top:9%; width:34%; border-radius:16px; border:3px solid #111; box-shadow:0 18px 40px -16px rgba(0,0,0,.45); display:block; }
+    .live-chip { position:absolute; left:12px; top:12px; z-index:1; display:inline-flex; align-items:center; gap:6px; background:rgba(10,10,10,.82); color:#fff; font-size:11px; font-weight:700; padding:5px 10px 5px 8px; border-radius:999px; backdrop-filter:blur(6px); }
 
     /* Floating dock nav */
     .dock { position:fixed; top:14px; left:50%; z-index:1200; display:flex; align-items:center; gap:4px; padding:6px; border-radius:999px;
@@ -152,90 +150,157 @@
       { label: 'Now building', tag: 'GitHub', title: null, body: 'Recent GitHub activity will show here once the integration is wired up.' },
     ];
 
+    // shots: real screenshots in images/projects. layout 'duo' overlays a phone shot on a desktop shot in the card preview.
     const PROJECTS = [
       {
+        id: 'baobae', tag: 'Next.js', title: 'Bao-bae', badge: 'Live event · 200 users', date: 'Apr 2026',
+        desc: 'Mobile-first live voting app for a bachelor-style show run by the Cantonese Club (CTC) at Stony Brook. Audience members sign in with Google and get one vote per round, while production runs the show from an admin dashboard.',
+        stack: ['Next.js', 'React 19', 'TypeScript', 'Supabase Auth', 'PostgreSQL', 'Custom CSS'],
+        links: [
+          { label: 'Live site', href: 'https://baobae-kappa.vercel.app/' },
+          { label: 'Admin view', href: 'https://baobae-kappa.vercel.app/admin' },
+          { label: 'Code', href: 'https://github.com/ryan-c07/baobae' },
+        ],
+        layout: 'duo',
+        shots: [
+          { src: 'images/projects/baobae-audience.jpg', alt: 'Bao-bae audience voting room on a phone', caption: 'Audience voting room (mobile)', bg: '#fbeee9' },
+          { src: 'images/projects/baobae-admin.jpg', alt: 'Bao-bae production admin dashboard', caption: 'Production control room (/admin)', bg: '#fbeee9' },
+        ],
+        highlights: [
+          'Ran live at a CTC event on April 30 for about 200 concurrent audience members.',
+          'Limited every Google account to one vote per phase with a unique (phase_number, mode, voter_id) constraint in Postgres.',
+          'Built an admin control room to open elimination or revival rounds, choose who is on the ballot, mark eliminations, and watch live totals.',
+          'Made round resets non-destructive: bumping phase_number starts a fresh round while keeping every past vote.',
+        ],
+        arch: [
+          ['Server-checked voting API', 'Votes go through a Next.js route handler that verifies the Supabase Google session, checks the live phase and ballot, then writes the vote with a server-only client.'],
+          ['Fairness enforced by the database', 'A duplicate vote hits the unique constraint (Postgres error 23505), which the API turns into a friendly message. Row Level Security lets the public read state and contestants only.'],
+          ['Two ways into the control room', 'Admins sign in with an allowlisted Google account or a master password. Password sessions use an HMAC-signed cookie checked with a constant-time compare.'],
+          ['Live without websockets', 'The audience view polls event state every 5 seconds, and the dashboard polls totals every 1.5 seconds from a vote_totals aggregate view.'],
+        ],
+      },
+      {
         id: 'pharmacy', tag: 'PostgreSQL', title: 'Pharmacy Database Architect', badge: 'Paid project', date: 'Oct 2025',
-        desc: 'Multi-branch NYC pharmacy network database with a secure access schema for a mobile app and TwilioBot.',
-        stack: ['SQL', 'Bash', 'PostgreSQL', 'Twilio API'], live: null, code: null,
+        desc: 'PostgreSQL database for an NYC pharmacy network, designed so a patient mobile app and a Twilio SMS bot can request and track prescription refills.',
+        stack: ['SQL', 'Bash', 'PostgreSQL', 'Twilio API'],
+        links: [
+          { label: 'Schema diagram', href: 'https://drawsql.app/teams/personal-3758/diagrams/pharmacy-rx' },
+        ],
+        codePrivate: true,
+        shots: [
+          { src: 'images/projects/pharmacy-schema.jpg', alt: 'Pharmacy Rx database schema diagram', caption: 'Schema outline on drawSQL', fit: 'cover', pos: 'center 20%', bg: '#f7f7f8' },
+        ],
         highlights: [
           'Architected a multi-branch NYC pharmacy network database in PostgreSQL to streamline operations.',
           'Designed secure access schema connecting mobile applications and TwilioBot API.',
           'Built synthetic data scripts to simulate patient & prescription interactions for system testing.',
         ],
         arch: [
-          ['Normalized relational core', 'Branches, patients, prescribers, prescriptions, refills, and inventory as 3NF tables with foreign keys and check constraints.'],
-          ['Role-scoped access layer', 'Separate PostgreSQL roles for the app and the bot, restricted to views and stored procedures.'],
-          ['TwilioBot integration', 'SMS refill requests call parameterized procedures and return status without exposing PHI.'],
-          ['Synthetic data pipeline', 'Bash + SQL scripts generate thousands of realistic events to load-test before go-live.'],
+          ['Patients at the center', 'Patients holds name, date of birth, phone, and email. App accounts, refills, and Twilio sessions all link back to it by patient_id.'],
+          ['Refill lifecycle', 'Refills track the Rx number, medication, requested and ready dates, pickup time, and notes. Status and request origin live in the RefillStatus and RequestSource lookup tables.'],
+          ['Login data kept separate', 'AppUsers stores the email, password hash, verification flag, push device token, and last login apart from medical records.'],
+          ['Twilio conversation log', 'TwilioSessions records each Twilio session ID, channel, and start and end time, tied to a patient and the refill it concerns.'],
         ],
-        Preview: () => (
-          <div className="mock mock-dark">
-            <div className="row"><span><span className="dot"></span>prescriptions</span><span style={{opacity:.5}}>PostgreSQL</span></div>
-            <div className="row"><span>rx_id · patient_id · branch_id</span><span style={{opacity:.5}}>PK/FK</span></div>
-            <div className="row"><span>refills(rx_id, requested_at)</span><span style={{color:'#ffd400'}}>queued</span></div>
-            <div style={{marginTop:10, background:'#1c1c1c', borderRadius:8, padding:'6px 8px'}}>📱 TwilioBot: "Refill RX-4821?" → <b style={{color:'#ffd400'}}>queued</b></div>
-          </div>
-        ),
-      },
-      {
-        id: 'pantry', tag: 'React', title: 'Pantry Tracker', badge: 'Headstarter', date: 'Aug 2024',
-        desc: 'Responsive pantry inventory app with dynamic search and Gemini-powered recipe generation.',
-        stack: ['JavaScript', 'React.js', 'Material-UI', 'Gemini API'], live: null, code: PROFILE.github,
-        highlights: [
-          'Created responsive Web application tracking pantry inventory with dynamic search and AI-driven recipe generation.',
-          'Developed fully mobile-optimized UI with interactive inventory management modals.',
-        ],
-        arch: [
-          ['React + Material-UI front end', 'Component-driven UI with responsive Grid layouts and MUI modals for add, edit, and remove flows.'],
-          ['Client-side search', 'In-memory filtering on every keystroke with debounced state updates.'],
-          ['Gemini recipe engine', 'Inventory is serialized into a structured prompt and recipes come back constrained to on-hand items.'],
-          ['Mobile-first', 'Touch-sized targets and bottom-anchored actions for one-handed kitchen use.'],
-        ],
-        Preview: () => (
-          <div className="mock mock-light">
-            <div style={{border:'1px solid #e6e6e2', borderRadius:8, padding:'5px 8px', color:'#888'}}>🔍 Search pantry…</div>
-            <div className="row"><span>Eggs</span><span>12</span></div>
-            <div className="row"><span>Spinach</span><span>1 bag</span></div>
-            <div className="row"><span>Parmesan</span><span>200g</span></div>
-            <div style={{marginTop:8, background:'#ffd400', borderRadius:999, padding:'6px 10px', textAlign:'center', fontWeight:700}}>✨ Generate recipes</div>
-          </div>
-        ),
       },
       {
         id: 'nuetrivia', tag: 'Java', title: 'Nue-Trivia', badge: 'Hackathon winner', date: 'Oct 2024',
-        desc: 'Award-winning youth nutrition game with custom sprites and real-time GPT-4 generated trivia.',
-        stack: ['Java', 'OpenAI API (GPT-4)', 'JFrame'], live: null, code: PROFILE.github,
+        desc: 'Top-down pixel-art nutrition game built by a hackathon team. Walk up to food characters and they quiz you with multiple-choice questions written live by OpenAI.',
+        stack: ['Java', 'Swing / JFrame', 'OpenAI API (GPT-4o mini)'],
+        links: [
+          { label: 'Demo video', href: 'https://youtu.be/_xb2x3qkbf0' },
+          { label: 'Code', href: 'https://github.com/Christian-Wan/Hackathon_Game' },
+        ],
+        shots: [
+          { src: 'images/projects/nuetrivia.jpg', alt: 'Nue-Trivia game frame with the Pear character', caption: "Frame rebuilt from the game's own sprites and map", fit: 'cover', pos: 'center 30%', bg: '#00ab00' },
+        ],
         highlights: [
           'Built award-winning youth nutrition game featuring custom game sprites and real-time AI-generated trivia.',
           'Created interactive gameplay loop with point-based reward mechanisms to boost learning engagement.',
         ],
         arch: [
-          ['Swing / JFrame renderer', 'Custom game loop on a Swing Timer repaints sprite layers; a state machine drives screens.'],
-          ['GPT-4 trivia generator', 'Async calls fetch age-appropriate questions, pre-fetched a round ahead to hide latency.'],
-          ['Custom sprite assets', 'Hand-drawn food characters loaded through a lightweight sprite-sheet manager.'],
-          ['Reward mechanics', 'Streak multipliers, unlockables, and a persistent high-score board.'],
+          ['Swing game loop', 'A fixed 60 FPS loop repaints a 1280 by 640 JFrame panel. A shared Engine object gives every class access to the player, stage, input, and sound.'],
+          ['Data-driven maps', 'Four pixel maps are scaled up 10 times. Plain-text map files list each food character and its hitbox, and walking off an edge loads the next map.'],
+          ['Questions written by GPT', 'Each food character asks GPT-4o mini for a question about itself in a fixed format, then parses out the correct letter, a hint, and an explanation.'],
+          ['Answers, hints, feedback', 'Players answer with A to D buttons or ask for a hint. A right answer shows "You are correct!", and a wrong one shows the correct letter with an explanation.'],
         ],
-        Preview: () => (
-          <div className="mock mock-dark">
-            <div className="row"><span>🥕 Nue-Trivia</span><span style={{color:'#ffd400'}}>Score 240</span></div>
-            <div style={{marginTop:6, fontWeight:700}}>Which food is highest in fiber?</div>
-            <div className="ans">Cheddar cheese</div>
-            <div className="ans ok">Black beans</div>
-            <div className="ans">White rice</div>
-          </div>
-        ),
+      },
+      {
+        id: 'pantry', tag: 'Next.js', title: 'Pantry Tracker', badge: 'Headstarter', date: 'Aug 2024',
+        desc: 'Pantry inventory app with instant search and Gemini recipe ideas. Each person signs in with Google and gets a private pantry.',
+        stack: ['Next.js', 'React', 'Material-UI', 'Firebase', 'Gemini API'],
+        links: [
+          { label: 'Live site', href: 'https://pantry-tracker-bay-xi.vercel.app/' },
+          { label: 'Demo video', href: 'https://youtu.be/1xDUebEPZEA' },
+          { label: 'Code', href: 'https://github.com/ryan-c07/pantry-tracker' },
+        ],
+        shots: [
+          { src: 'images/projects/pantry.jpg', alt: 'Pantry Tracker sign-in screen', caption: 'Live sign-in screen', fit: 'cover', pos: 'center', bg: '#f5f2ec' },
+        ],
+        highlights: [
+          'Created responsive Web application tracking pantry inventory with dynamic search and AI-driven recipe generation.',
+          'Developed fully mobile-optimized UI with interactive inventory management modals.',
+          'Added Google sign-in with a private pantry per user, protected by Firestore security rules.',
+        ],
+        arch: [
+          ['Next.js and Material-UI', 'A Next.js app with Material-UI dialogs for adding and editing items and a layout that works on phones.'],
+          ['Private data per user', 'Items live under users/{uid}/inventory in Firestore, and security rules only let the signed-in owner read or write them.'],
+          ['Instant search', 'The inventory filters in memory as you type, with clear empty states for an empty pantry or no matches.'],
+          ['Protected recipe route', 'A server route verifies the Firebase ID token, caps the item list, and calls Gemini 2.5 Flash with a 60-second limit to avoid timeouts.'],
+        ],
       },
     ];
 
-    // icon: Simple Icons slug (https://simpleicons.org). mono: fallback letters when no brand icon exists.
+    function ProjectPreview({ p }) {
+      const [first, second] = p.shots;
+      const chip = p.links.some(l => l.label === 'Live site') && <span className="live-chip"><span className="pulse" />Live</span>;
+      if (p.layout === 'duo') return (
+        <div className="preview preview-duo">{chip}
+          <img className="duo-desktop" src={second.src} alt={second.alt} loading="lazy" />
+          <img className="duo-phone" src={first.src} alt={first.alt} loading="lazy" />
+        </div>
+      );
+      return (
+        <div className="preview" style={{ background: first.bg }}>{chip}
+          <img className="shot" src={first.src} alt={first.alt} loading="lazy" style={{ objectFit: first.fit || 'cover', objectPosition: first.pos || 'center top' }} />
+        </div>
+      );
+    }
+
+    function ProjectGallery({ p }) {
+      const [i, setI] = useState(0);
+      const s = p.shots[i];
+      return (
+        <Box>
+          <Box sx={{ borderRadius: 3, overflow: 'hidden', border: '1px solid', borderColor: 'divider', bgcolor: s.bg || '#f6f6f4', display: 'grid', placeItems: 'center', minHeight: 220 }}>
+            <AnimatePresence mode="wait">
+              <motion.img key={s.src} src={s.src} alt={s.alt} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: .25 }}
+                style={{ display: 'block', maxWidth: '100%', maxHeight: 440, objectFit: 'contain' }} />
+            </AnimatePresence>
+          </Box>
+          <Stack direction="row" justifyContent="space-between" alignItems="center" spacing={2} sx={{ mt: 1.25 }}>
+            <Typography variant="caption" color="text.secondary">{s.caption}</Typography>
+            {p.shots.length > 1 && (
+              <Stack direction="row" spacing={1}>
+                {p.shots.map((t, k) => (
+                  <Box key={t.src} component="button" onClick={() => setI(k)} aria-label={`Show ${t.caption}`}
+                    sx={{ width: 64, height: 42, p: 0, borderRadius: 1.5, cursor: 'pointer', overflow: 'hidden', border: '2px solid', borderColor: k === i ? '#ffd400' : 'divider', background: `${t.bg || '#f6f6f4'} url(${t.src}) center top / cover no-repeat`, opacity: k === i ? 1 : .65 }} />
+                ))}
+              </Stack>
+            )}
+          </Stack>
+        </Box>
+      );
+    }
+
     const STACK = {
       'Languages': [
         { n: 'Java', icon: 'openjdk' }, { n: 'Kotlin', icon: 'kotlin' }, { n: 'Python', icon: 'python' }, { n: 'Swift', icon: 'swift' },
-        { n: 'SQL', icon: 'postgresql' }, { n: 'JavaScript', icon: 'javascript' }, { n: 'HTML/CSS', icon: 'html5' },
+        { n: 'SQL', icon: 'postgresql' }, { n: 'JavaScript', icon: 'javascript' }, { n: 'TypeScript', icon: 'typescript' }, { n: 'HTML/CSS', icon: 'html5' },
       ],
       'Frameworks & APIs': [
         { n: 'React.js', icon: 'react' }, { n: 'Next.js', icon: 'nextdotjs' }, { n: 'Material-UI', icon: 'mui' }, { n: 'OpenAI API', mono: 'AI' },
         { n: 'Gemini API', icon: 'googlegemini' }, { n: 'Twilio API', mono: 'Tw' }, { n: 'PostgreSQL', icon: 'postgresql' },
+        { n: 'Supabase', icon: 'supabase' }, { n: 'Firebase', icon: 'firebase' },
       ],
       'Tools': [
         { n: 'Git', icon: 'git' }, { n: 'VS Code', mono: '</>' }, { n: 'PyCharm', icon: 'pycharm' }, { n: 'IntelliJ', icon: 'intellijidea' },
@@ -703,15 +768,15 @@
       return (
         <Box component="section" id="projects" sx={{ py: { xs: 9, md: 12 } }}>
           <Container maxWidth="lg">
-            <SectionHead label="Projects" title="Selected builds across databases, AI, and full-stack engineering." />
+            <SectionHead label="Projects" title="Selected builds across live apps, databases, AI, and games." />
             <Box sx={{ overflow: 'hidden', mx: -1 }}>
               <motion.div animate={{ x: `${-i * (100 / visible)}%` }} transition={{ type: 'spring', stiffness: 260, damping: 30 }} style={{ display: 'flex' }}>
                 {PROJECTS.map((p, k) => (
-                  <Box key={p.id} sx={{ flex: `0 0 ${100 / visible}%`, px: 1 }}>
+                  <Box key={p.id} sx={{ flex: `0 0 ${100 / visible}%`, minWidth: 0, px: 1 }}>
                     <Reveal delay={k * .08} style={{ height: '100%' }}>
                       <motion.div whileHover={{ y: -6 }} style={{ height: '100%' }}>
                         <SpotlightCard className="proj" onClick={() => onOpen(p)} sx={{ cursor: 'pointer' }} innerSx={{ display: 'flex', flexDirection: 'column' }}>
-                          <div className="preview"><p.Preview /></div>
+                          <ProjectPreview p={p} />
                           <CardContent sx={{ p: 3, flex: 1, display: 'flex', flexDirection: 'column' }}>
                             <Stack direction="row" justifyContent="space-between" alignItems="center">
                               <span className="label label-y">{p.tag}</span>
@@ -722,10 +787,9 @@
                             <Stack direction="row" flexWrap="wrap" gap={.75} sx={{ mt: 2 }}>
                               {p.stack.map(s => <Chip key={s} size="small" label={s} variant="outlined" sx={{ height: 24, fontSize: 11 }} />)}
                             </Stack>
-                            <Stack direction="row" spacing={1} sx={{ mt: 'auto', pt: 2.5 }} onClick={e => e.stopPropagation()}>
+                            <Stack direction="row" flexWrap="wrap" gap={1} sx={{ mt: 'auto', pt: 2.5, '& .MuiButton-root': { whiteSpace: 'nowrap' } }} onClick={e => e.stopPropagation()}>
                               <Button variant="contained" size="small" onClick={() => onOpen(p)}>View details</Button>
-                              {p.code ? <Button variant="outlined" color="secondary" size="small" href={p.code} target="_blank" rel="noopener" endIcon={I.out}>View code</Button>
-                                : <Button variant="outlined" color="secondary" size="small" disabled>Code private</Button>}
+                              {p.links[0] && <Button variant="outlined" color="secondary" size="small" href={p.links[0].href} target="_blank" rel="noopener" endIcon={I.out}>{p.links[0].label}</Button>}
                             </Stack>
                           </CardContent>
                         </SpotlightCard>
@@ -762,8 +826,9 @@
                 <span className="label">{p.date}</span>
               </Stack>
               <Typography variant="h2" sx={{ mt: 2, pr: 5 }}>{p.title}</Typography>
+              <Stack direction="row" flexWrap="wrap" gap={.75} sx={{ mt: 1.5 }}>{p.stack.map(t => <Chip key={t} size="small" label={t} variant="outlined" sx={{ height: 24, fontSize: 11 }} />)}</Stack>
               <Typography color="text.secondary" sx={{ mt: 1 }}>{p.desc}</Typography>
-              <Box sx={{ mt: 3, borderRadius: 3, overflow: 'hidden', border: '1px solid', borderColor: 'divider' }}><div className="preview" style={{ borderBottom: 0 }}><p.Preview /></div></Box>
+              <Box sx={{ mt: 3 }}><ProjectGallery key={p.id} p={p} /></Box>
               <div className="label label-y" style={{ marginTop: 32, marginBottom: 12 }}>Impact</div>
               <Stack spacing={1.25}>{p.highlights.map(h => <Stack key={h} direction="row" spacing={1.5}><Box sx={{ mt: 1.1, width: 6, height: 6, borderRadius: 99, bgcolor: '#ffd400', flexShrink: 0 }} /><Typography>{h}</Typography></Stack>)}</Stack>
               <div className="label label-y" style={{ marginTop: 32, marginBottom: 12 }}>Architecture</div>
@@ -779,7 +844,8 @@
                 ))}
               </Grid>
               <Stack direction="row" spacing={1} sx={{ mt: 4 }} flexWrap="wrap">
-                {p.code && <Button variant="contained" href={p.code} target="_blank" rel="noopener" endIcon={I.out}>View code</Button>}
+                {p.links.map((l, k) => <Button key={l.href} variant={k === 0 ? 'contained' : 'outlined'} color={k === 0 ? 'primary' : 'secondary'} href={l.href} target="_blank" rel="noopener" endIcon={I.out}>{l.label}</Button>)}
+                {p.codePrivate && <Button variant="outlined" color="secondary" disabled>Code private (client work)</Button>}
                 <Button variant="outlined" color="secondary" onClick={() => { onClose(); onContact(); }}>Ask me about this</Button>
               </Stack>
             </DialogContent>
