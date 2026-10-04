@@ -3,12 +3,18 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Ryan Chen — Software Engineer</title>
-  <meta name="description" content="Ryan Chen — Computer Science student at Stony Brook University and Software Engineer in New York." />
+  <title>Ryan Chen | Software Engineer</title>
+  <meta name="description" content="Ryan Chen is a Computer Science student at Stony Brook University and a software engineer in New York, building live apps, databases, and AI tools." />
+  <meta name="theme-color" content="#0c0a09" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Ryan Chen | Software Engineer" />
+  <meta property="og:description" content="Computer Science student at Stony Brook University and software engineer in New York." />
+  <meta name="twitter:card" content="summary" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231c1917'/%3E%3Ctext x='50%25' y='54%25' text-anchor='middle' dominant-baseline='middle' font-family='Arial,Helvetica,sans-serif' font-weight='700' font-size='28' fill='%23E5BE3E'%3ERC%3C/text%3E%3C/svg%3E" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=Geist+Mono:wght@400..600&display=swap" rel="stylesheet" />
 
   <!-- React + Material UI + framer-motion (UMD) -->
   <script crossorigin src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
@@ -19,57 +25,93 @@
   <script src="https://unpkg.com/@babel/standalone@7.24.7/babel.min.js"></script>
 
   <style>
-    :root { --ink:#0a0a0a; --yellow:#ffd400; --paper:#ffffff; --paper2:#f6f6f4; --line:#e6e6e2; --text:#111; --mute:#6b6b6b; }
+    /* One warm-neutral (stone) palette, one accent. Easing curves from Emil Kowalski's design-engineering standards. */
+    :root { --ink:#0c0a09; --yellow:#E5BE3E; --yellow-ink:#7a5f00; --paper:#fafaf9; --card:#ffffff; --paper2:#f5f5f4; --line:#e7e5e4; --text:#1c1917; --mute:#57534e;
+      --ease-out:cubic-bezier(0.23, 1, 0.32, 1); --ease-in-out:cubic-bezier(0.77, 0, 0.175, 1);
+      --font-mono:'Geist Mono', ui-monospace, Menlo, monospace; }
     html { scroll-behavior: smooth; }
-    body { margin:0; background:var(--paper); color:var(--text); font-family:'Manrope', system-ui, sans-serif; -webkit-font-smoothing:antialiased; overflow-x:hidden; }
+    body { margin:0; background:var(--paper); color:var(--text); font-family:'Geist', system-ui, sans-serif; -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility; overflow-x:hidden; }
+    h1, h2, h3 { text-wrap: balance; }
+    p { text-wrap: pretty; }
+    .mono { font-family:var(--font-mono); font-variant-numeric: tabular-nums; letter-spacing:-0.01em; }
+
+    /* Subtle film grain so large flat surfaces don't feel sterile */
+    body::after { content:''; position:fixed; inset:0; pointer-events:none; z-index:1400; opacity:.03;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+
+    /* Accessibility: skip link and visible keyboard focus */
+    .skip-link { position:absolute; left:12px; top:-60px; z-index:1500; background:var(--text); color:#fff; padding:10px 14px; border-radius:10px; font-weight:600; text-decoration:none; transition:top 200ms var(--ease-out); }
+    .skip-link:focus { top:12px; }
+    :focus-visible { outline:2px solid var(--text); outline-offset:3px; }
+    .hero :focus-visible, .dock :focus-visible { outline-color:var(--yellow); }
+    main:focus { outline:none; }
+
+    /* Motion: CSS-driven reveal (GPU-only properties), hover gated to real pointers, press feedback */
+    .reveal { opacity:0; transform:translateY(12px); transition:opacity 600ms var(--ease-out), transform 600ms var(--ease-out); }
+    .reveal.is-in { opacity:1; transform:none; }
+    .intro { animation:intro 700ms var(--ease-out) both; animation-delay:var(--d, 0s); }
+    @keyframes intro { from { opacity:0; transform:translateY(14px); } }
+    .lift { transition:transform 220ms var(--ease-out); }
+    @media (hover:hover) and (pointer:fine) { .lift:hover { transform:translateY(-3px); } }
+    .press { transition:transform 160ms var(--ease-out); }
+    .press:active { transform:scale(.97); }
+    .bob { animation:bob 6s ease-in-out infinite; }
+    @keyframes bob { 50% { transform:translateY(-6px); } }
+    .eq { display:flex; align-items:flex-end; gap:4px; height:18px; }
+    .eq span { width:4px; height:18px; border-radius:2px; background:var(--yellow); transform-origin:bottom; animation:eq 1.1s ease-in-out infinite alternate; }
+    .eq span:nth-child(2) { animation-delay:-.4s; } .eq span:nth-child(3) { animation-delay:-.8s; } .eq span:nth-child(4) { animation-delay:-.2s; } .eq span:nth-child(5) { animation-delay:-.6s; }
+    @keyframes eq { from { transform:scaleY(.25); } to { transform:scaleY(1); } }
+    @media (prefers-reduced-motion: reduce) {
+      .reveal { transform:none; transition:opacity 300ms ease; }
+      .intro { animation:fade 300ms ease both; }
+      .bob, .eq span { animation:none; }
+      @keyframes fade { from { opacity:0; } }
+    }
     ::selection { background:var(--yellow); color:#000; }
-    ::-webkit-scrollbar { width:8px; } ::-webkit-scrollbar-track { background:#111; } ::-webkit-scrollbar-thumb { background:#333; border-radius:999px; } ::-webkit-scrollbar-thumb:hover { background:var(--yellow); }
+    ::-webkit-scrollbar { width:8px; } ::-webkit-scrollbar-track { background:#1c1917; } ::-webkit-scrollbar-thumb { background:#333; border-radius:999px; } ::-webkit-scrollbar-thumb:hover { background:var(--yellow); }
 
     /* Hero: inset rounded frame, liquid canvas, glass cards */
-    .hero { position:relative; background:#0d0d0d; color:#fff; overflow:hidden; min-height:calc(100svh - 24px); border-radius:28px; border:1px solid rgba(255,255,255,.06); }
+    .hero { position:relative; background:#0c0a09; color:#fff; overflow:hidden; min-height:calc(100svh - 24px); border-radius:28px; border:1px solid rgba(255,255,255,.06); }
     @media (max-width:899px) { .hero { border-radius:0; min-height:100svh; border:0; } }
     .hero-canvas { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
     .hero-canvas canvas { display:block; width:100% !important; height:100% !important; }
-    .hero-glow { position:absolute; left:50%; bottom:-20%; width:70%; height:60%; transform:translateX(-50%); pointer-events:none; background: radial-gradient(closest-side, rgba(255,212,0,.16), rgba(255,212,0,0)); filter: blur(30px); }
+    .hero-glow { position:absolute; left:50%; bottom:-20%; width:70%; height:60%; transform:translateX(-50%); pointer-events:none; background: radial-gradient(closest-side, rgba(229,190,62,.16), rgba(229,190,62,0)); filter: blur(30px); }
     .hero-vignette { position:absolute; inset:0; pointer-events:none; background: radial-gradient(70% 55% at 50% 0%, rgba(255,255,255,.05), transparent 70%); }
-    .hero-link { color:rgba(255,255,255,.7); text-decoration:none; font-weight:600; font-size:14px; transition:color .2s; }
-    .hero-link:hover { color:#ffd400; }
+    .hero-link { color:rgba(255,255,255,.72); text-decoration:none; font-weight:500; font-size:14px; transition:color 200ms ease; }
+    .hero-link:hover { color:#E5BE3E; }
     .glass-card { position:absolute; z-index:2; width:200px; padding:16px 18px; border-radius:18px; background:rgba(20,20,20,.55); border:1px solid rgba(255,255,255,.12); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); box-shadow:0 30px 60px -30px rgba(0,0,0,.8); }
     @media (max-width:1099px) { .glass-card { display:none; } }
     .glass-head { display:flex; justify-content:space-between; align-items:center; font-size:11px; color:rgba(255,255,255,.6); font-weight:600; }
-    .glass-arrow { width:26px; height:26px; border-radius:999px; background:#fff; color:#000; display:grid; place-items:center; }
-    .glass-title { margin-top:12px; font-weight:700; font-size:15px; line-height:1.25; }
+    .glass-title { margin-top:12px; font-weight:600; font-size:15px; line-height:1.25; }
     .glass-sub { display:block; font-size:11px; color:rgba(255,255,255,.45); font-weight:600; margin-top:6px; }
-    .glass-big { margin-top:10px; font-weight:800; font-size:30px; letter-spacing:-.03em; }
-    .glass-bar { margin-top:10px; height:3px; background:rgba(255,255,255,.12); border-radius:999px; overflow:hidden; }
-    .glass-bar > div { height:100%; background:#ffd400; border-radius:999px; }
+    .glass-big { margin-top:10px; font-weight:600; font-size:30px; letter-spacing:-.04em; font-variant-numeric:tabular-nums; }
 
-    .label { font-size:11px; font-weight:700; letter-spacing:.16em; text-transform:uppercase; color:var(--mute); }
-    .label-y { color:#9a7f00; }
+    .label { font-size:13px; font-weight:500; letter-spacing:-0.005em; color:var(--mute); }
+    .label-y { color:var(--yellow-ink); font-weight:600; }
 
     /* Project previews (real screenshots) */
-    .preview { height:210px; border-bottom:1px solid var(--line); background:var(--paper2); position:relative; overflow:hidden; }
-    .preview img { transition: transform .6s cubic-bezier(.22,1,.36,1); }
-    .proj:hover .preview img { transform: scale(1.04); }
+    .preview { height:240px; border-bottom:1px solid var(--line); background:var(--paper2); position:relative; overflow:hidden; }
+    .preview img { transition: transform 600ms var(--ease-out); }
+    @media (hover:hover) and (pointer:fine) { .proj:hover .preview img { transform: scale(1.035); } }
     .preview .shot { position:absolute; inset:0; width:100%; height:100%; display:block; }
     .preview-duo { background:#fbeee9; }
     .duo-desktop { position:absolute; left:5%; top:16%; width:74%; border-radius:10px; box-shadow:0 18px 40px -18px rgba(0,0,0,.35); display:block; }
-    .duo-phone { position:absolute; right:6%; top:9%; width:34%; border-radius:16px; border:3px solid #111; box-shadow:0 18px 40px -16px rgba(0,0,0,.45); display:block; }
-    .live-chip { position:absolute; left:12px; top:12px; z-index:1; display:inline-flex; align-items:center; gap:6px; background:rgba(10,10,10,.82); color:#fff; font-size:11px; font-weight:700; padding:5px 10px 5px 8px; border-radius:999px; backdrop-filter:blur(6px); }
+    .duo-phone { position:absolute; right:6%; top:9%; width:34%; border-radius:16px; border:3px solid #1c1917; box-shadow:0 18px 40px -16px rgba(0,0,0,.45); display:block; }
 
     /* Floating dock nav */
     .dock { position:fixed; top:14px; left:50%; z-index:1200; display:flex; align-items:center; gap:4px; padding:6px; border-radius:999px;
       background:rgba(10,10,10,.74); backdrop-filter:blur(14px) saturate(140%); -webkit-backdrop-filter:blur(14px) saturate(140%);
       border:1px solid rgba(255,255,255,.12); box-shadow:0 14px 40px -14px rgba(0,0,0,.5); }
-    .dock-avatar { width:34px; height:34px; border-radius:999px; overflow:hidden; margin-right:4px; flex-shrink:0; border:2px solid #ffd400; display:block; }
+    .dock-avatar { width:34px; height:34px; border-radius:999px; overflow:hidden; margin-right:4px; flex-shrink:0; border:2px solid #E5BE3E; display:block; }
     .dock-avatar img { width:100%; height:100%; object-fit:cover; object-position:center 18%; display:block; }
-    .dock-link { position:relative; border:0; background:none; color:rgba(255,255,255,.72); font:600 13.5px Manrope, system-ui, sans-serif;
-      padding:8px 14px; border-radius:999px; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; gap:4px; transition:color .2s; white-space:nowrap; }
+    .dock-link { position:relative; border:0; background:none; color:rgba(255,255,255,.72); font:500 13.5px Geist, system-ui, sans-serif;
+      padding:8px 14px; border-radius:999px; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; gap:4px; transition:color 200ms ease, transform 160ms var(--ease-out); white-space:nowrap; }
+    .dock-link:active, .dock-cta:active { transform:scale(.97); }
     .dock-link:hover { color:#fff; }
     .dock-link[data-active="true"] { color:#000; }
-    .dock-pill { position:absolute; inset:0; background:#ffd400; border-radius:999px; }
-    .dock-cta { margin-left:4px; background:#fff; color:#000; border:0; font:700 13.5px Manrope, system-ui, sans-serif; padding:8px 16px; border-radius:999px; cursor:pointer; transition:background .2s; white-space:nowrap; }
-    .dock-cta:hover { background:#ffd400; }
+    .dock-pill { position:absolute; inset:0; background:#E5BE3E; border-radius:999px; }
+    .dock-cta { margin-left:4px; background:#fff; color:#000; border:0; font:600 13.5px Geist, system-ui, sans-serif; padding:8px 16px; border-radius:999px; cursor:pointer; transition:background-color 200ms ease, transform 160ms var(--ease-out); white-space:nowrap; }
+    .dock-cta:hover { background:#E5BE3E; }
     @media (max-width:599px) { .dock-avatar, .dock-cta { display:none; } .dock-link { padding:8px 10px; font-size:13px; } }
 
     /* Logo marquee */
@@ -79,10 +121,7 @@
     @keyframes marquee { to { transform:translateX(-50%); } }
     @media (prefers-reduced-motion: reduce) { .marquee-track { animation:none; } }
 
-    .pulse { width:7px; height:7px; border-radius:99px; background:#ffd400; display:inline-block; box-shadow:0 0 0 0 rgba(255,212,0,.7); animation:pulse 2s infinite; }
-    @keyframes pulse { 70% { box-shadow:0 0 0 7px rgba(255,212,0,0); } 100% { box-shadow:0 0 0 0 rgba(255,212,0,0); } }
 
-    .grid-bg { background-image: linear-gradient(var(--line) 1px, transparent 1px), linear-gradient(90deg, var(--line) 1px, transparent 1px); background-size: 40px 40px; }
   </style>
 </head>
 <body>
@@ -92,33 +131,43 @@
     const { useState, useEffect, useRef, useMemo } = React;
     const {
       ThemeProvider, createTheme, CssBaseline, Box, Container, Typography, Button, Chip, IconButton, Avatar, Stack, Grid,
-      Card, CardContent, Dialog, DialogContent, TextField, Snackbar, Alert, Tooltip, useMediaQuery, Divider, LinearProgress, Skeleton,
+      Card, CardContent, Dialog, DialogContent, TextField, Snackbar, Alert, Tooltip, Divider, Skeleton,
     } = MaterialUI;
-    const { motion, AnimatePresence, useScroll, useSpring, useMotionValue, useMotionTemplate, useInView } = Motion;
+    const { motion, AnimatePresence, MotionConfig, useScroll, useSpring, useMotionValue, useMotionTemplate, useInView } = Motion;
 
     /* ================= THEME ================= */
+    const ACCENT = '#E5BE3E';
+    const pressable = { transition: 'transform 160ms cubic-bezier(0.23, 1, 0.32, 1), background-color 200ms ease, border-color 200ms ease, color 200ms ease', '&:active': { transform: 'scale(0.97)' } };
     const theme = createTheme({
       palette: {
         mode: 'light',
-        primary: { main: '#ffd400', contrastText: '#000' },
-        secondary: { main: '#0a0a0a' },
-        background: { default: '#ffffff', paper: '#ffffff' },
-        text: { primary: '#111111', secondary: '#6b6b6b' },
-        divider: '#e6e6e2',
+        primary: { main: ACCENT, contrastText: '#1c1917' },
+        secondary: { main: '#1c1917' },
+        background: { default: '#fafaf9', paper: '#ffffff' },
+        text: { primary: '#1c1917', secondary: '#57534e' },
+        divider: '#e7e5e4',
       },
-      shape: { borderRadius: 14 },
+      shape: { borderRadius: 12 },
       typography: {
-        fontFamily: 'Manrope, system-ui, sans-serif',
-        h1: { fontWeight: 800, letterSpacing: '-0.03em' },
-        h2: { fontWeight: 800, letterSpacing: '-0.03em', fontSize: 'clamp(1.6rem, 3vw, 2.1rem)', lineHeight: 1.2 },
-        h3: { fontWeight: 700, letterSpacing: '-0.02em' },
-        button: { textTransform: 'none', fontWeight: 700 },
+        fontFamily: 'Geist, system-ui, sans-serif',
+        h1: { fontWeight: 600, letterSpacing: '-0.045em' },
+        h2: { fontWeight: 600, letterSpacing: '-0.035em', fontSize: 'clamp(1.75rem, 3.2vw, 2.4rem)', lineHeight: 1.12 },
+        h3: { fontWeight: 600, letterSpacing: '-0.025em' },
+        body1: { lineHeight: 1.7 },
+        button: { textTransform: 'none', fontWeight: 600, letterSpacing: '-0.01em' },
       },
       components: {
-        MuiButton: { styleOverrides: { root: { borderRadius: 999, paddingInline: 18, boxShadow: 'none', '&:hover': { boxShadow: 'none' } } } },
-        MuiChip: { styleOverrides: { root: { borderRadius: 999, fontWeight: 600 } } },
-        MuiCard: { styleOverrides: { root: { border: '1px solid #e6e6e2', boxShadow: 'none', borderRadius: 16 } } },
+        MuiButtonBase: { defaultProps: { disableRipple: true } },
+        MuiButton: { styleOverrides: {
+          root: { borderRadius: 999, paddingInline: 18, boxShadow: 'none', '&:hover': { boxShadow: 'none' }, ...pressable },
+          containedPrimary: { '&:hover': { backgroundColor: '#EDCB5A' } },
+        } },
+        MuiIconButton: { styleOverrides: { root: pressable } },
+        MuiChip: { styleOverrides: { root: { borderRadius: 999, fontWeight: 500 } } },
+        MuiCard: { styleOverrides: { root: { border: '1px solid #e7e5e4', boxShadow: 'none', borderRadius: 16 } } },
         MuiTextField: { defaultProps: { variant: 'outlined', fullWidth: true } },
+        MuiOutlinedInput: { styleOverrides: { root: { borderRadius: 12, backgroundColor: '#fff',
+          '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#1c1917', borderWidth: 1.5 } } } },
       },
     });
 
@@ -134,13 +183,13 @@
     const HIGHLIGHTS = [
       { t: 'Bao-bae', s: '219 live votes at a campus show' },
       { t: 'Headstarter', s: 'AI software engineering fellow' },
-      { t: 'CS @ SBU', s: '3.67 GPA · Dean\'s List' },
+      { t: 'CS @ SBU', s: '3.67 GPA, Dean\'s List' },
       { t: 'Pharmacy DB', s: 'contract PostgreSQL data layer' },
     ];
 
     // Add more { src, caption } entries to get a clickable thumbnail strip under the photo.
     const PHOTOS = [
-      { src: 'images/me.jpg', caption: 'Ryan Chen · New York, NY' },
+      { src: 'images/me.jpg', caption: 'Portrait of Ryan Chen' },
     ];
 
     // 'github' renders live activity from the public GitHub API instead of static text.
@@ -153,7 +202,7 @@
     // shots: real screenshots in images/projects. layout 'duo' overlays a phone shot on a desktop shot in the card preview.
     const PROJECTS = [
       {
-        id: 'baobae', tag: 'Next.js', title: 'Bao-bae', badge: 'Live event · 219 votes', date: 'Apr 2026',
+        id: 'baobae', tag: 'Next.js', title: 'Bao-bae', badge: '219 live votes', date: 'Apr 2026',
         desc: 'Co-developed, mobile-first live voting app for a bachelor-style campus show run by the Cantonese Club (CTC) at Stony Brook. Audience members sign in with Google and get one vote per round, while production runs the show from an admin dashboard.',
         stack: ['Next.js', 'React 19', 'TypeScript', 'Supabase', 'PostgreSQL'],
         links: [
@@ -251,15 +300,14 @@
 
     function ProjectPreview({ p }) {
       const [first, second] = p.shots;
-      const chip = p.links.some(l => l.label === 'Live site') && <span className="live-chip"><span className="pulse" />Live</span>;
       if (p.layout === 'duo') return (
-        <div className="preview preview-duo">{chip}
+        <div className="preview preview-duo">
           <img className="duo-desktop" src={second.src} alt={second.alt} loading="lazy" />
           <img className="duo-phone" src={first.src} alt={first.alt} loading="lazy" />
         </div>
       );
       return (
-        <div className="preview" style={{ background: first.bg }}>{chip}
+        <div className="preview" style={{ background: first.bg }}>
           <img className="shot" src={first.src} alt={first.alt} loading="lazy" style={{ objectFit: first.fit || 'cover', objectPosition: first.pos || 'center top' }} />
         </div>
       );
@@ -270,7 +318,7 @@
       const s = p.shots[i];
       return (
         <Box>
-          <Box sx={{ borderRadius: 3, overflow: 'hidden', border: '1px solid', borderColor: 'divider', bgcolor: s.bg || '#f6f6f4', display: 'grid', placeItems: 'center', minHeight: 220 }}>
+          <Box sx={{ borderRadius: 3, overflow: 'hidden', border: '1px solid', borderColor: 'divider', bgcolor: s.bg || '#f5f5f4', display: 'grid', placeItems: 'center', minHeight: 220 }}>
             <AnimatePresence mode="wait">
               <motion.img key={s.src} src={s.src} alt={s.alt} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: .25 }}
                 style={{ display: 'block', maxWidth: '100%', maxHeight: 440, objectFit: 'contain' }} />
@@ -282,7 +330,7 @@
               <Stack direction="row" spacing={1}>
                 {p.shots.map((t, k) => (
                   <Box key={t.src} component="button" onClick={() => setI(k)} aria-label={`Show ${t.caption}`}
-                    sx={{ width: 64, height: 42, p: 0, borderRadius: 1.5, cursor: 'pointer', overflow: 'hidden', border: '2px solid', borderColor: k === i ? '#ffd400' : 'divider', background: `${t.bg || '#f6f6f4'} url(${t.src}) center top / cover no-repeat`, opacity: k === i ? 1 : .65 }} />
+                    sx={{ width: 64, height: 42, p: 0, borderRadius: 1.5, cursor: 'pointer', overflow: 'hidden', border: '2px solid', borderColor: k === i ? '#E5BE3E' : 'divider', background: `${t.bg || '#f5f5f4'} url(${t.src}) center top / cover no-repeat`, opacity: k === i ? 1 : .65 }} />
                 ))}
               </Stack>
             )}
@@ -319,14 +367,14 @@
 
     const TechIcon = ({ item, size = 16 }) => item.icon
       ? <img src={`https://cdn.simpleicons.org/${item.icon}/111111`} alt="" width={size} height={size} loading="lazy" style={{ display: 'block' }} />
-      : <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: '-.02em', lineHeight: 1 }}>{item.mono}</span>;
+      : <span style={{ fontSize: 9, fontWeight: 650, letterSpacing: '-.02em', lineHeight: 1 }}>{item.mono}</span>;
 
     const EXPERIENCE = [
-      { org: 'Headstarter AI', role: 'Software Engineering Fellow', when: 'Jul 2024 – Sept 2024', loc: 'New York, NY',
+      { org: 'Headstarter AI', role: 'Software Engineering Fellow', when: 'Jul 2024 - Sept 2024', loc: 'New York, NY',
         bullets: ['Engineered AI-driven projects including Pantry Tracker, AI flashcards, and an AI customer support system using Next.js, Material-UI, and the OpenAI and Gemini APIs.'] },
-      { org: 'NYCDOE Division of Instructional and Information Technology', role: 'Intern', when: 'Jul 2024 – Aug 2024', loc: 'Brooklyn, NY',
+      { org: 'NYCDOE Division of Instructional and Information Technology', role: 'Intern', when: 'Jul 2024 - Aug 2024', loc: 'Brooklyn, NY',
         bullets: ['Presented key insights to CIO and executive team, influencing strategic decisions.', 'Analyzed TeachHub usage and surveyed 500+ K-12 students to improve functionality for the largest U.S. school district (912,064 students).'] },
-      { org: 'NYCDOE Division of Instructional and Information Technology', role: 'Project Intern', when: 'Apr 2024 – May 2024', loc: 'Brooklyn, NY',
+      { org: 'NYCDOE Division of Instructional and Information Technology', role: 'Project Intern', when: 'Apr 2024 - May 2024', loc: 'Brooklyn, NY',
         bullets: ['Standardized official transcript processes across NYC DOE systems by designing detailed UML diagrams and workflow proposals.', 'Documented edge cases and created scenarios to ensure accurate record delivery across departments.', 'Examined student records including transcripts, IEPs, 504s, and PSAL documentation to inform recommendations.'] },
     ];
 
@@ -351,17 +399,18 @@
     };
 
     /* ================= HELPERS ================= */
-    const Reveal = ({ children, delay = 0, y = 22, ...rest }) => (
-      <motion.div initial={{ opacity: 0, y }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: '-80px' }}
-        transition={{ duration: .7, ease: [.22, 1, .36, 1], delay }} {...rest}>{children}</motion.div>
-    );
+    // Scroll reveal using a CSS transition on transform/opacity (GPU) instead of JS-driven motion.
+    function Reveal({ children, delay = 0, style, className = '', ...rest }) {
+      const ref = useRef(null);
+      const seen = useInView(ref, { once: true, margin: '0px 0px -10% 0px' });
+      return <div ref={ref} className={`reveal ${seen ? 'is-in' : ''} ${className}`} style={{ ...style, transitionDelay: seen ? `${delay}s` : '0s' }} {...rest}>{children}</div>;
+    }
 
     const SectionHead = ({ label, title, right }) => (
       <Reveal>
-        <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" alignItems={{ md: 'flex-end' }} spacing={2} sx={{ mb: 5 }}>
+        <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" alignItems={{ md: 'flex-end' }} spacing={2.5} sx={{ mb: { xs: 5, md: 7 } }}>
           <Box>
-            <div className="label label-y" style={{ marginBottom: 12 }}>{label}</div>
-            <Typography variant="h2" sx={{ maxWidth: 640 }}>{title}</Typography>
+            <Typography variant="h2" sx={{ maxWidth: 680 }}>{title}</Typography>
           </Box>
           {right}
         </Stack>
@@ -369,15 +418,15 @@
     );
 
     // Card with a yellow glow that follows the cursor across the surface and along the border.
-    function SpotlightCard({ children, bg = '#fff', innerSx, sx, glow = .16, ...rest }) {
+    function SpotlightCard({ children, bg = '#fff', innerSx, sx, glow = .1, ...rest }) {
       const mx = useMotionValue(-500), my = useMotionValue(-500);
-      const surface = useMotionTemplate`radial-gradient(380px circle at ${mx}px ${my}px, rgba(255,212,0,${glow}), transparent 70%)`;
-      const edge = useMotionTemplate`radial-gradient(260px circle at ${mx}px ${my}px, rgba(255,212,0,.95), transparent 70%)`;
+      const surface = useMotionTemplate`radial-gradient(380px circle at ${mx}px ${my}px, rgba(229,190,62,${glow}), transparent 70%)`;
+      const edge = useMotionTemplate`radial-gradient(240px circle at ${mx}px ${my}px, rgba(229,190,62,.7), transparent 70%)`;
       const move = e => { const r = e.currentTarget.getBoundingClientRect(); mx.set(e.clientX - r.left); my.set(e.clientY - r.top); };
       const leave = () => { mx.set(-500); my.set(-500); };
       return (
         <Box onMouseMove={move} onMouseLeave={leave} {...rest}
-          sx={{ position: 'relative', height: '100%', borderRadius: '17px', p: '1px', bgcolor: bg === '#0a0a0a' ? '#262626' : '#e6e6e2', overflow: 'hidden', ...sx }}>
+          sx={{ position: 'relative', height: '100%', borderRadius: '17px', p: '1px', bgcolor: bg === '#0c0a09' ? '#292524' : '#e7e5e4', overflow: 'hidden', ...sx }}>
           <motion.div aria-hidden style={{ position: 'absolute', inset: 0, background: edge }} />
           <Box sx={{ position: 'relative', height: '100%', borderRadius: '16px', bgcolor: bg, overflow: 'hidden' }}>
             <motion.div aria-hidden style={{ position: 'absolute', inset: 0, background: surface, pointerEvents: 'none' }} />
@@ -392,17 +441,14 @@
       const links = [['About', 'about'], ['Now', 'now'], ['Projects', 'projects'], ['Stack', 'stack']];
       const [show, setShow] = useState(false), [active, setActive] = useState('');
       useEffect(() => {
-        const onScroll = () => {
-          setShow(window.scrollY > window.innerHeight * .75);
-          let cur = '';
-          ['about', 'now', 'projects', 'stack', 'resume', 'contact'].forEach(id => {
-            const el = document.getElementById(id);
-            if (el && el.getBoundingClientRect().top < window.innerHeight * .4) cur = id;
-          });
-          setActive(cur);
-        };
-        onScroll(); window.addEventListener('scroll', onScroll, { passive: true });
-        return () => window.removeEventListener('scroll', onScroll);
+        // Show the dock once the hero's bottom passes the top 75% of the viewport; no per-frame scroll handler.
+        const hero = document.querySelector('.hero');
+        const heroIO = new IntersectionObserver(([e]) => { setShow(!e.isIntersecting); if (e.isIntersecting) setActive(''); }, { rootMargin: '-75% 0px 0px 0px' });
+        hero && heroIO.observe(hero);
+        // Highlight whichever section crosses a thin band just above the middle of the screen.
+        const sectionIO = new IntersectionObserver(entries => entries.forEach(e => e.isIntersecting && setActive(e.target.id)), { rootMargin: '-40% 0px -55% 0px' });
+        ['about', 'now', 'projects', 'stack', 'resume', 'contact'].forEach(id => { const el = document.getElementById(id); el && sectionIO.observe(el); });
+        return () => { heroIO.disconnect(); sectionIO.disconnect(); };
       }, []);
       const go = id => { const el = document.getElementById(id); el && el.scrollIntoView({ behavior: 'smooth', block: 'start' }); };
       return (
@@ -410,7 +456,7 @@
           {show && (
             <motion.nav className="dock" aria-label="Section navigation"
               initial={{ y: -80, opacity: 0, x: '-50%' }} animate={{ y: 0, opacity: 1, x: '-50%' }} exit={{ y: -80, opacity: 0, x: '-50%' }}
-              transition={{ type: 'spring', stiffness: 320, damping: 30 }}>
+              transition={{ type: 'spring', duration: .45, bounce: .12 }}>
               <a className="dock-avatar" href="#top" onClick={e => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); }} aria-label="Back to top">
                 <img src={PHOTOS[0].src} alt="" />
               </a>
@@ -421,7 +467,7 @@
                 </button>
               ))}
               <a className="dock-link" href={PROFILE.resume} target="_blank" rel="noopener">Resume{I.out}</a>
-              <button className="dock-cta" onClick={onContact}>Let's talk</button>
+              <button className="dock-cta" onClick={onContact}>Get in touch</button>
             </motion.nav>
           )}
         </AnimatePresence>
@@ -527,7 +573,7 @@
         const shells = [];
         const mk = (scale, seed, rimPow, rimStr, fill, amp) => {
           const u = { uTime: { value: 0 }, uAmp: { value: amp }, uFreq: { value: .7 }, uSeed: { value: seed },
-            uColor: { value: new THREE.Color(0xffd400) }, uRimPow: { value: rimPow }, uRimStr: { value: rimStr }, uFill: { value: fill } };
+            uColor: { value: new THREE.Color(0xe5be3e) }, uRimPow: { value: rimPow }, uRimStr: { value: rimStr }, uFill: { value: fill } };
           const m = new THREE.ShaderMaterial({ uniforms: u, vertexShader: VERT, fragmentShader: FRAG, transparent: true, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending });
           const mesh = new THREE.Mesh(geo, m); mesh.scale.setScalar(scale); scene.add(mesh); shells.push({ mesh, u }); return mesh;
         };
@@ -559,7 +605,7 @@
         const onMove = e => { const r = el.getBoundingClientRect(); target.x = ((e.clientX - r.left) / r.width - .5); target.y = ((e.clientY - r.top) / r.height - .5); };
         el.parentElement.addEventListener('pointermove', onMove);
 
-        let raf, t0 = performance.now();
+        let raf = 0, visible = true, t0 = performance.now();
         const frame = now => {
           const t = (now - t0) / 1000;
           shells.forEach(({ u }) => u.uTime.value = t);
@@ -568,12 +614,15 @@
           group.rotation.x = cur.y * .2;
           stars.rotation.z = t * .004;
           renderer.render(scene, camera);
-          if (!reduced) raf = requestAnimationFrame(frame);
+          raf = (!reduced && visible) ? requestAnimationFrame(frame) : 0;
         };
         raf = requestAnimationFrame(frame);
+        // Stop drawing while the hero is scrolled out of view; resume when it returns.
+        const vis = new IntersectionObserver(([e]) => { visible = e.isIntersecting; if (visible && !raf && !reduced) raf = requestAnimationFrame(frame); });
+        vis.observe(el);
 
         return () => {
-          cancelAnimationFrame(raf); ro.disconnect(); el.parentElement.removeEventListener('pointermove', onMove);
+          cancelAnimationFrame(raf); ro.disconnect(); vis.disconnect(); el.parentElement.removeEventListener('pointermove', onMove);
           geo.dispose(); shells.forEach(s => s.mesh.material.dispose()); sGeo.dispose(); renderer.dispose(); el.removeChild(renderer.domElement);
         };
       }, []);
@@ -584,69 +633,67 @@
       const links = [['About', '#about'], ['Now', '#now'], ['Projects', '#projects'], ['Stack', '#stack'], ['Resume', PROFILE.resume]];
       const jump = (e, h) => { if (!h.startsWith('#')) return; e.preventDefault(); const el = document.querySelector(h); el && el.scrollIntoView({ behavior: 'smooth', block: 'start' }); history.replaceState(null, '', h); };
       return (
-        <Box sx={{ p: { xs: 0, md: 1.5 }, bgcolor: '#0a0a0a' }}>
-          <section className="hero">
+        <Box component="header" sx={{ p: { xs: 0, md: 1.5 }, bgcolor: 'background.default' }}>
+          <section className="hero" aria-label="Introduction">
             <div className="hero-glow" />
             <LiquidCanvas />
             <div className="hero-vignette" />
 
             {/* Nav */}
             <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 2, pt: 3 }}>
-              <Stack direction="row" alignItems="center" justifyContent="space-between">
-                <motion.a href="#top" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: .6 }}
-                  style={{ color: '#fff', textDecoration: 'none', fontWeight: 800, fontSize: 18, letterSpacing: '-0.02em' }}>
-                  Ryan Chen<span style={{ color: '#ffd400' }}>.</span>
-                </motion.a>
+              <Stack component="nav" aria-label="Primary" direction="row" alignItems="center" justifyContent="space-between">
+                <a href="#top" className="intro" style={{ color: '#fff', textDecoration: 'none', fontWeight: 600, fontSize: 18, letterSpacing: '-0.03em' }}>
+                  Ryan Chen<span style={{ color: '#E5BE3E' }}>.</span>
+                </a>
                 <Stack direction="row" spacing={4} sx={{ display: { xs: 'none', md: 'flex' } }}>
                   {links.map(([t, h], i) => (
-                    <motion.a key={t} href={h} onClick={e => jump(e, h)} target={h.startsWith('#') ? undefined : '_blank'} rel="noopener"
-                      initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: .1 + i * .06 }}
-                      className="hero-link">{t}{!h.startsWith('#') && <span style={{ marginLeft: 4, verticalAlign: -2, display: 'inline-flex' }}>{I.out}</span>}</motion.a>
+                    <a key={t} href={h} onClick={e => jump(e, h)} target={h.startsWith('#') ? undefined : '_blank'} rel="noopener"
+                      className="hero-link intro" style={{ '--d': `${.08 + i * .05}s` }}>{t}{!h.startsWith('#') && <span style={{ marginLeft: 4, verticalAlign: -2, display: 'inline-flex' }}>{I.out}</span>}</a>
                   ))}
                 </Stack>
-                <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: .6 }}>
+                <div className="intro">
                   <Stack direction="row" spacing={1}>
                     <Button href={PROFILE.github} target="_blank" rel="noopener" sx={{ color: '#fff', bgcolor: 'rgba(255,255,255,.08)', display: { xs: 'none', sm: 'inline-flex' }, '&:hover': { bgcolor: 'rgba(255,255,255,.14)' } }}>GitHub</Button>
-                    <Button onClick={onContact} sx={{ bgcolor: '#fff', color: '#000', '&:hover': { bgcolor: '#ffd400' } }}>Get in touch</Button>
+                    <Button onClick={onContact} sx={{ bgcolor: '#fff', color: '#000', '&:hover': { bgcolor: '#E5BE3E' } }}>Get in touch</Button>
                   </Stack>
-                </motion.div>
+                </div>
               </Stack>
             </Container>
 
             {/* Copy */}
             <Container maxWidth="md" sx={{ position: 'relative', zIndex: 2, textAlign: 'center', pt: { xs: 10, md: 12 }, pb: { xs: 34, md: 44 } }}>
-              <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .9, delay: .15, ease: [.22, 1, .36, 1] }}>
-                <Typography variant="h1" sx={{ color: '#fff', fontSize: 'clamp(2.4rem, 6vw, 4.6rem)', lineHeight: 1.04, fontWeight: 700 }}>
-                  Hello! I am Ryan Chen,<br />from <Box component="span" sx={{ color: '#ffd400' }}>{PROFILE.location}</Box>
+              <div className="intro" style={{ '--d': '.12s' }}>
+                <Typography variant="h1" sx={{ color: '#fff', fontSize: 'clamp(2.4rem, 6vw, 4.4rem)', lineHeight: 1.04, fontWeight: 600 }}>
+                  Hello! I am Ryan Chen,<br />from <Box component="span" sx={{ color: '#E5BE3E' }}>{PROFILE.location}</Box>
                 </Typography>
-              </motion.div>
-              <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .9, delay: .35 }}>
-                <Typography sx={{ mt: 3, mx: 'auto', maxWidth: 520, color: 'rgba(255,255,255,.6)', fontSize: { xs: 15, md: 17 }, lineHeight: 1.7 }}>
+              </div>
+              <div className="intro" style={{ '--d': '.24s' }}>
+                <Typography sx={{ mt: 3, mx: 'auto', maxWidth: 560, color: 'rgba(255,255,255,.68)', fontSize: { xs: 15, md: 17 }, lineHeight: 1.7, textWrap: 'balance' }}>
                   Computer Science student at Stony Brook University and Software Engineer. Production databases, AI-driven apps, and a hackathon win.
                 </Typography>
-              </motion.div>
-              <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .9, delay: .5 }}>
+              </div>
+              <div className="intro" style={{ '--d': '.36s' }}>
                 <Stack direction="row" spacing={1.5} justifyContent="center" sx={{ mt: 4 }}>
-                  <Button href="#projects" onClick={e => jump(e, '#projects')} size="large" sx={{ bgcolor: '#fff', color: '#000', px: 3, '&:hover': { bgcolor: '#ffd400' } }}>See selected work</Button>
-                  <Button size="large" onClick={onContact} sx={{ color: '#fff', px: 3, bgcolor: 'rgba(255,255,255,.06)', '&:hover': { bgcolor: 'rgba(255,255,255,.12)' } }}>Contact</Button>
+                  <Button href="#projects" onClick={e => jump(e, '#projects')} size="large" sx={{ bgcolor: '#fff', color: '#000', px: 3, '&:hover': { bgcolor: '#E5BE3E' } }}>See selected work</Button>
+                  <Button size="large" onClick={onContact} sx={{ color: '#fff', px: 3, bgcolor: 'rgba(12,10,9,.62)', border: '1px solid rgba(255,255,255,.18)', backdropFilter: 'blur(10px)', '&:hover': { bgcolor: 'rgba(12,10,9,.8)', borderColor: 'rgba(255,255,255,.32)' } }}>Get in touch</Button>
                 </Stack>
-              </motion.div>
+              </div>
             </Container>
 
-            {/* Floating glass cards */}
-            <motion.div className="glass-card" style={{ left: '9%', bottom: '28%' }} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: .8, duration: .8 }}>
-              <motion.div animate={{ y: [0, -6, 0] }} transition={{ repeat: Infinity, duration: 6, ease: 'easeInOut' }}>
-                <div className="glass-head"><span>Nue-Trivia</span><span className="glass-arrow">{I.out}</span></div>
-                <div className="glass-title">Hackathon<br />Winner <span className="glass-sub">Oct 2024</span></div>
-              </motion.div>
-            </motion.div>
-            <motion.div className="glass-card" style={{ right: '9%', bottom: '18%' }} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1, duration: .8 }}>
-              <motion.div animate={{ y: [0, -6, 0] }} transition={{ repeat: Infinity, duration: 7, ease: 'easeInOut', delay: 1 }}>
-                <div className="glass-head"><span>NYCDOE research</span><span className="glass-arrow">{I.out}</span></div>
+            {/* Floating glass cards (decorative, so hidden from screen readers) */}
+            <div className="glass-card intro" aria-hidden="true" style={{ left: '9%', bottom: '28%', '--d': '.6s' }}>
+              <div className="bob">
+                <div className="glass-head"><span>Nue-Trivia</span></div>
+                <div className="glass-title">Hackathon<br />winner <span className="glass-sub">Oct 2024</span></div>
+              </div>
+            </div>
+            <div className="glass-card intro" aria-hidden="true" style={{ right: '9%', bottom: '18%', '--d': '.75s' }}>
+              <div className="bob" style={{ animationDelay: '-3s' }}>
+                <div className="glass-head"><span>NYCDOE research</span></div>
                 <div className="glass-big">500+</div>
-                <div className="glass-bar"><motion.div initial={{ width: 0 }} animate={{ width: '72%' }} transition={{ delay: 1.4, duration: 1.2, ease: [.22, 1, .36, 1] }} /></div>
-              </motion.div>
-            </motion.div>
+                <span className="glass-sub">K-12 students surveyed</span>
+              </div>
+            </div>
           </section>
         </Box>
       );
@@ -656,17 +703,16 @@
     function About() {
       const [active, setActive] = useState(0);
       return (
-        <Box component="section" id="about" sx={{ py: { xs: 9, md: 12 } }}>
+        <Box component="section" id="about" sx={{ pt: { xs: 10, md: 14 }, pb: { xs: 11, md: 15 } }}>
           <Container maxWidth="lg">
             <Grid container spacing={6} alignItems="flex-start">
               <Grid item xs={12} md={6}>
                 <Reveal>
-                  <div className="label label-y" style={{ marginBottom: 12 }}>About</div>
                   <Typography variant="h2">I build practical, polished software that turns messy workflows into products people can actually use.</Typography>
-                  <Typography color="text.secondary" sx={{ mt: 3, lineHeight: 1.8 }}>
+                  <Typography color="text.secondary" sx={{ mt: 3, lineHeight: 1.75, maxWidth: '62ch' }}>
                     I am a Computer Science student at Stony Brook University and a software engineer in New York. My work sits between the data layer and the user: a live voting app that handled 219 votes at a campus show, the PostgreSQL data layer for a contract pharmacy refill platform, AI-driven web apps built as a Headstarter fellow, and a hackathon-winning trivia game.
                   </Typography>
-                  <Typography color="text.secondary" sx={{ mt: 2, lineHeight: 1.8 }}>
+                  <Typography color="text.secondary" sx={{ mt: 2, lineHeight: 1.75, maxWidth: '62ch' }}>
                     At the NYC Department of Education I surveyed 500+ students across the nation's largest school district and presented key insights to the CIO and executive team.
                   </Typography>
                 </Reveal>
@@ -674,12 +720,12 @@
                   {HIGHLIGHTS.map((h, i) => (
                     <Grid item xs={6} key={h.t}>
                       <Reveal delay={i * .07}>
-                        <motion.div whileHover={{ y: -4 }}>
-                          <Card sx={{ p: 2.5, bgcolor: '#f6f6f4', '&:hover': { borderColor: '#ffd400' } }}>
-                            <Typography sx={{ fontWeight: 800, fontSize: 20, letterSpacing: '-0.02em' }}>{h.t}</Typography>
+                        <Box className="lift">
+                          <Card sx={{ p: 2.5, bgcolor: '#fff', transition: 'border-color 200ms ease', '&:hover': { borderColor: '#E5BE3E' } }}>
+                            <Typography sx={{ fontWeight: 650, fontSize: 20, letterSpacing: '-0.02em' }}>{h.t}</Typography>
                             <Typography variant="body2" color="text.secondary" sx={{ mt: .5 }}>{h.s}</Typography>
                           </Card>
-                        </motion.div>
+                        </Box>
                       </Reveal>
                     </Grid>
                   ))}
@@ -688,25 +734,20 @@
 
               <Grid item xs={12} md={6}>
                 <Reveal delay={.15}>
-                  <Box sx={{ position: 'relative', aspectRatio: '4/5', maxHeight: 640, mx: 'auto', borderRadius: 4, border: '1px solid', borderColor: 'divider', overflow: 'hidden', bgcolor: '#0a0a0a',
-                    '& img': { transition: 'transform .8s cubic-bezier(.22,1,.36,1)' }, '&:hover img': { transform: 'scale(1.035)' } }}>
+                  <Box sx={{ position: 'relative', aspectRatio: '4/5', maxHeight: 640, mx: 'auto', borderRadius: 4, border: '1px solid', borderColor: 'divider', overflow: 'hidden', bgcolor: '#0c0a09',
+                    '& img': { transition: 'transform 800ms cubic-bezier(0.23, 1, 0.32, 1)' }, '@media (hover: hover) and (pointer: fine)': { '&:hover img': { transform: 'scale(1.03)' } } }}>
                     <AnimatePresence mode="wait">
                       <motion.img key={active} src={PHOTOS[active].src} alt={PHOTOS[active].caption}
                         initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: .45 }}
                         style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 22%', display: 'block' }} />
                     </AnimatePresence>
-                    <Box sx={{ position: 'absolute', inset: 0, pointerEvents: 'none', background: 'linear-gradient(180deg, rgba(0,0,0,0) 62%, rgba(0,0,0,.55) 100%)' }} />
-                    <Stack direction="row" alignItems="center" spacing={1} sx={{ position: 'absolute', left: 16, bottom: 16, bgcolor: 'rgba(10,10,10,.72)', backdropFilter: 'blur(8px)', color: '#fff', borderRadius: 999, pl: 1, pr: 1.75, py: .75, border: '1px solid rgba(255,255,255,.12)' }}>
-                      <Box sx={{ width: 8, height: 8, borderRadius: 99, bgcolor: '#ffd400', ml: .5 }} />
-                      <Typography sx={{ fontSize: 13, fontWeight: 700 }}>{PHOTOS[active].caption}</Typography>
-                    </Stack>
                   </Box>
                   {PHOTOS.length > 1 && (
                     <Stack direction="row" spacing={1} sx={{ mt: 1.5 }}>
                       {PHOTOS.map((ph, i) => (
-                        <motion.button key={ph.src} onClick={() => setActive(i)} whileHover={{ y: -3 }} aria-label={`Show photo: ${ph.caption}`}
-                          style={{ flex: 1, height: 64, padding: 0, borderRadius: 10, overflow: 'hidden', cursor: 'pointer', border: `2px solid ${i === active ? '#ffd400' : '#e6e6e2'}`,
-                            background: `#0a0a0a url(${ph.src}) center 25% / cover no-repeat`, opacity: i === active ? 1 : .7 }} />
+                        <motion.button key={ph.src} className="press" onClick={() => setActive(i)} aria-label={`Show photo: ${ph.caption}`}
+                          style={{ flex: 1, height: 64, padding: 0, borderRadius: 10, overflow: 'hidden', cursor: 'pointer', border: `2px solid ${i === active ? '#E5BE3E' : '#e7e5e4'}`,
+                            background: `#0c0a09 url(${ph.src}) center 25% / cover no-repeat`, opacity: i === active ? 1 : .7 }} />
                       ))}
                     </Stack>
                   )}
@@ -782,18 +823,18 @@
         <Box sx={{ mt: 1.5 }}>
           <Typography color="text.secondary" sx={{ lineHeight: 1.7 }}>
             {gh.weekPushes > 0 ? `${gh.weekPushes} push${gh.weekPushes === 1 ? '' : 'es'} across ${gh.weekRepos} repo${gh.weekRepos === 1 ? '' : 's'} this week` : 'Latest public pushes'}
-            {gh.lastAt && ` · last active ${timeAgo(gh.lastAt)}`}
+            {gh.lastAt && `, last active ${timeAgo(gh.lastAt)}`}
           </Typography>
           <Stack spacing={1} sx={{ mt: 1.75 }}>
             {gh.items.map(it => (
               <Box key={it.sha} component="a" href={it.url} target="_blank" rel="noopener"
-                sx={{ display: 'flex', alignItems: 'center', gap: 1.5, px: 1.75, py: 1.25, borderRadius: 2, border: '1px solid', borderColor: 'divider', color: 'inherit', textDecoration: 'none', bgcolor: '#fafaf8', transition: 'border-color .2s, transform .2s', '&:hover': { borderColor: '#ffd400', transform: 'translateX(3px)' } }}>
-                <Box sx={{ color: '#111', display: 'grid', placeItems: 'center', flexShrink: 0 }}>{I.github}</Box>
+                sx={{ display: 'flex', alignItems: 'center', gap: 1.5, px: 1.75, py: 1.25, borderRadius: 2, border: '1px solid', borderColor: 'divider', color: 'inherit', textDecoration: 'none', bgcolor: '#fafaf9', transition: 'border-color 200ms ease, transform 220ms cubic-bezier(0.23, 1, 0.32, 1)', '&:hover': { borderColor: '#E5BE3E' }, '@media (hover: hover) and (pointer: fine)': { '&:hover': { transform: 'translateX(3px)' } } }}>
+                <Box sx={{ color: '#1c1917', display: 'grid', placeItems: 'center', flexShrink: 0 }}>{I.github}</Box>
                 <Box sx={{ minWidth: 0, flex: 1 }}>
-                  <Typography sx={{ fontWeight: 800, fontSize: 14 }}>{it.repo.split('/').pop()}</Typography>
+                  <Typography sx={{ fontWeight: 650, fontSize: 14 }}>{it.repo.split('/').pop()}</Typography>
                   <Typography variant="body2" color="text.secondary" noWrap>{it.msg || 'Pushed new commits'}</Typography>
                 </Box>
-                <Typography variant="caption" sx={{ color: 'text.secondary', flexShrink: 0, fontFamily: 'ui-monospace, Menlo, monospace' }}>{it.sha.slice(0, 7)} · {timeAgo(it.at)}</Typography>
+                <Stack direction="row" spacing={1.5} className="mono" sx={{ color: 'text.secondary', flexShrink: 0, fontSize: 12 }}><span>{it.sha.slice(0, 7)}</span><span>{timeAgo(it.at)}</span></Stack>
               </Box>
             ))}
           </Stack>
@@ -804,14 +845,10 @@
 
     /* ================= NOW ================= */
     function Now() {
-      const [tick, setTick] = useState(0);
-      useEffect(() => { const t = setInterval(() => setTick(x => x + 1), 1000); return () => clearInterval(t); }, []);
-      const time = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', timeZone: 'America/New_York' });
       return (
-        <Box component="section" id="now" sx={{ py: { xs: 9, md: 12 }, bgcolor: '#f6f6f4', borderTop: '1px solid', borderBottom: '1px solid', borderColor: 'divider' }}>
+        <Box component="section" id="now" sx={{ pt: { xs: 10, md: 14 }, pb: { xs: 11, md: 15 }, bgcolor: '#f5f5f4', borderTop: '1px solid', borderBottom: '1px solid', borderColor: 'divider' }}>
           <Container maxWidth="lg">
-            <SectionHead label="Now" title="A live snapshot of what I am listening to, working on, and building."
-              right={<Chip icon={<span className="pulse" style={{ marginLeft: 10 }} />} label={`${time} · New York`} size="small" sx={{ bgcolor: '#0a0a0a', color: '#ffd400', pl: .25 }} />} />
+            <SectionHead label="Now" title="A live snapshot of what I am listening to, working on, and building." />
             <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' } }}>
               {NOW.map((n, i) => {
                 const span = i === 0 ? 'span 1' : i === 1 ? 'span 2' : '1 / -1';   // bento: 1 + 2 on the first row, GitHub full width below
@@ -819,18 +856,16 @@
                 return (
                   <Box key={n.label} sx={{ gridColumn: { md: span } }}>
                     <Reveal delay={i * .08} style={{ height: '100%' }}>
-                      <SpotlightCard bg={dark ? '#0a0a0a' : '#fff'} glow={dark ? .12 : .18} innerSx={{ p: 3, minHeight: 190, display: 'flex', flexDirection: 'column' }}>
+                      <SpotlightCard bg={dark ? '#0c0a09' : '#fff'} glow={dark ? .1 : .12} innerSx={{ p: 3, minHeight: 190, display: 'flex', flexDirection: 'column' }}>
                         <Stack direction="row" justifyContent="space-between" alignItems="center">
                           <span className="label" style={dark ? { color: 'rgba(255,255,255,.55)' } : undefined}>{n.label}</span>
-                          {n.tag && <Chip size="small" label={n.tag} sx={{ bgcolor: '#ffd400', color: '#000', height: 22 }} />}
-                          {dark && <Stack direction="row" spacing={1} alignItems="center"><span className="pulse" /><Typography sx={{ color: '#ffd400', fontSize: 12, fontWeight: 700 }}>In progress</Typography></Stack>}
+                          {n.tag && <Chip size="small" label={n.tag} sx={{ bgcolor: '#E5BE3E', color: '#000', height: 22 }} />}
+                          {dark && <Typography sx={{ color: '#E5BE3E', fontSize: 13, fontWeight: 500 }}>In progress</Typography>}
                         </Stack>
-                        {n.title && <Typography sx={{ mt: 2, fontWeight: 800, fontSize: dark ? 26 : 19, letterSpacing: '-0.02em', color: dark ? '#fff' : 'inherit', lineHeight: 1.2 }}>{n.title}</Typography>}
+                        {n.title && <Typography sx={{ mt: 2, fontWeight: 650, fontSize: dark ? 26 : 19, letterSpacing: '-0.02em', color: dark ? '#fff' : 'inherit', lineHeight: 1.2 }}>{n.title}</Typography>}
                         <Typography sx={{ mt: n.title ? 1.25 : 1.5, lineHeight: 1.7, color: dark ? 'rgba(255,255,255,.7)' : 'text.secondary', maxWidth: 560 }}>{n.body}</Typography>
                         {n.github && <GitHubActivity />}
-                        {n.label === 'Now listening to' && <Stack direction="row" spacing={.5} sx={{ mt: 'auto', pt: 2, alignItems: 'flex-end', height: 34 }}>
-                          {[0, 1, 2, 3, 4].map(k => <motion.span key={k} animate={{ height: [4, 14, 6, 16, 4] }} transition={{ repeat: Infinity, duration: 1.4 + k * .2 }} style={{ width: 4, background: '#ffd400', borderRadius: 2 }} />)}
-                        </Stack>}
+                        {n.label === 'Now listening to' && <Box sx={{ mt: 'auto', pt: 2 }}><div className="eq" aria-hidden="true"><span /><span /><span /><span /><span /></div></Box>}
                       </SpotlightCard>
                     </Reveal>
                   </Box>
@@ -844,56 +879,39 @@
 
     /* ================= PROJECTS ================= */
     function Projects({ onOpen }) {
-      const md = useMediaQuery('(min-width:900px)'), sm = useMediaQuery('(min-width:600px)');
-      const visible = md ? 3 : sm ? 2 : 1;
-      const [i, setI] = useState(0);
-      const max = Math.max(0, PROJECTS.length - visible);
-      const go = d => setI(x => Math.min(max, Math.max(0, x + d)));
-      useEffect(() => { setI(x => Math.min(x, max)); }, [max]);
+      const spans = [7, 5, 5, 7];   // asymmetric 2x2: wide + narrow, then narrow + wide
       return (
-        <Box component="section" id="projects" sx={{ py: { xs: 9, md: 12 } }}>
+        <Box component="section" id="projects" sx={{ pt: { xs: 10, md: 14 }, pb: { xs: 11, md: 15 } }}>
           <Container maxWidth="lg">
             <SectionHead label="Projects" title="Selected builds across live apps, databases, AI, and games." />
-            <Box sx={{ overflow: 'hidden', mx: -1 }}>
-              <motion.div animate={{ x: `${-i * (100 / visible)}%` }} transition={{ type: 'spring', stiffness: 260, damping: 30 }} style={{ display: 'flex' }}>
-                {PROJECTS.map((p, k) => (
-                  <Box key={p.id} sx={{ flex: `0 0 ${100 / visible}%`, minWidth: 0, px: 1 }}>
-                    <Reveal delay={k * .08} style={{ height: '100%' }}>
-                      <motion.div whileHover={{ y: -6 }} style={{ height: '100%' }}>
-                        <SpotlightCard className="proj" onClick={() => onOpen(p)} sx={{ cursor: 'pointer' }} innerSx={{ display: 'flex', flexDirection: 'column' }}>
-                          <ProjectPreview p={p} />
-                          <CardContent sx={{ p: 3, flex: 1, display: 'flex', flexDirection: 'column' }}>
-                            <Stack direction="row" justifyContent="space-between" alignItems="center">
-                              <span className="label label-y">{p.tag}</span>
-                              <Chip size="small" label={p.badge} sx={{ bgcolor: p.badge === 'Headstarter' ? '#f0f0ec' : '#ffd400', color: '#000', height: 22, fontSize: 11 }} />
-                            </Stack>
-                            <Typography sx={{ fontWeight: 800, fontSize: 19, mt: 1.5, letterSpacing: '-0.02em' }}>{p.title}</Typography>
-                            <Typography variant="body2" color="text.secondary" sx={{ mt: 1, lineHeight: 1.7 }}>{p.desc}</Typography>
-                            <Stack direction="row" flexWrap="wrap" gap={.75} sx={{ mt: 2 }}>
-                              {p.stack.map(s => <Chip key={s} size="small" label={s} variant="outlined" sx={{ height: 24, fontSize: 11 }} />)}
-                            </Stack>
-                            <Stack direction="row" flexWrap="wrap" gap={1} sx={{ mt: 'auto', pt: 2.5, '& .MuiButton-root': { whiteSpace: 'nowrap' } }} onClick={e => e.stopPropagation()}>
-                              <Button variant="contained" size="small" onClick={() => onOpen(p)}>View details</Button>
-                              {p.links[0] && <Button variant="outlined" color="secondary" size="small" href={p.links[0].href} target="_blank" rel="noopener" endIcon={I.out}>{p.links[0].label}</Button>}
-                            </Stack>
-                          </CardContent>
-                        </SpotlightCard>
-                      </motion.div>
-                    </Reveal>
-                  </Box>
-                ))}
-              </motion.div>
+            <Box sx={{ display: 'grid', gap: { xs: 2, md: 2.5 }, gridTemplateColumns: { xs: '1fr', md: 'repeat(12, 1fr)' } }}>
+              {PROJECTS.map((p, k) => (
+                <Box key={p.id} sx={{ gridColumn: { md: `span ${spans[k % spans.length]}` }, minWidth: 0 }}>
+                  <Reveal delay={(k % 2) * .06} style={{ height: '100%' }}>
+                    <Box className="lift" sx={{ height: '100%' }}>
+                      <SpotlightCard className="proj" onClick={() => onOpen(p)} sx={{ cursor: 'pointer' }} innerSx={{ display: 'flex', flexDirection: 'column' }}>
+                        <ProjectPreview p={p} />
+                        <CardContent sx={{ p: { xs: 3, md: 3.5 }, flex: 1, display: 'flex', flexDirection: 'column' }}>
+                          <Stack direction="row" justifyContent="space-between" alignItems="center" spacing={2}>
+                            <span className="label label-y">{p.tag}</span>
+                            <Chip size="small" label={p.badge} sx={{ bgcolor: p.badge === 'Headstarter' ? '#f5f5f4' : '#E5BE3E', color: '#1c1917', height: 24, fontSize: 12 }} />
+                          </Stack>
+                          <Typography component="h3" sx={{ fontWeight: 600, fontSize: 21, mt: 1.5, letterSpacing: '-0.03em' }}>{p.title}</Typography>
+                          <Typography variant="body2" color="text.secondary" sx={{ mt: 1, lineHeight: 1.7, maxWidth: '62ch' }}>{p.desc}</Typography>
+                          <Stack direction="row" flexWrap="wrap" gap={.75} sx={{ mt: 2 }}>
+                            {p.stack.map(s => <Chip key={s} size="small" label={s} variant="outlined" sx={{ height: 24, fontSize: 12, borderColor: 'divider' }} />)}
+                          </Stack>
+                          <Stack direction="row" flexWrap="wrap" gap={1} sx={{ mt: 'auto', pt: 3, '& .MuiButton-root': { whiteSpace: 'nowrap' } }} onClick={e => e.stopPropagation()}>
+                            <Button variant="contained" size="small" onClick={() => onOpen(p)}>View details</Button>
+                            {p.links[0] && <Button variant="outlined" color="secondary" size="small" href={p.links[0].href} target="_blank" rel="noopener" endIcon={I.out} sx={{ borderColor: 'divider' }}>{p.links[0].label}</Button>}
+                          </Stack>
+                        </CardContent>
+                      </SpotlightCard>
+                    </Box>
+                  </Reveal>
+                </Box>
+              ))}
             </Box>
-            <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mt: 3 }}>
-              <IconButton onClick={() => go(-1)} disabled={i === 0} sx={{ border: '1px solid', borderColor: 'divider' }}>{I.left}</IconButton>
-              <Stack direction="row" spacing={.75}>
-                {Array.from({ length: max + 1 }).map((_, k) => (
-                  <motion.button key={k} onClick={() => setI(k)} animate={{ width: k === i ? 22 : 8, background: k === i ? '#ffd400' : '#e6e6e2' }}
-                    style={{ height: 8, borderRadius: 999, border: 0, padding: 0, cursor: 'pointer' }} aria-label={`Slide ${k + 1}`} />
-                ))}
-              </Stack>
-              <IconButton onClick={() => go(1)} disabled={i === max} sx={{ border: '1px solid', borderColor: 'divider' }}>{I.right}</IconButton>
-            </Stack>
           </Container>
         </Box>
       );
@@ -906,23 +924,22 @@
             <DialogContent sx={{ p: { xs: 3, md: 5 } }}>
               <IconButton onClick={onClose} sx={{ position: 'absolute', top: 14, right: 14 }} aria-label="Close">{I.x}</IconButton>
               <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
-                <Chip size="small" label={p.badge} sx={{ bgcolor: '#ffd400', color: '#000' }} />
+                <Chip size="small" label={p.badge} sx={{ bgcolor: '#E5BE3E', color: '#000' }} />
                 <Chip size="small" label={p.tag} variant="outlined" />
-                <span className="label">{p.date}</span>
+                <span className="label mono">{p.date}</span>
               </Stack>
               <Typography variant="h2" sx={{ mt: 2, pr: 5 }}>{p.title}</Typography>
               <Stack direction="row" flexWrap="wrap" gap={.75} sx={{ mt: 1.5 }}>{p.stack.map(t => <Chip key={t} size="small" label={t} variant="outlined" sx={{ height: 24, fontSize: 11 }} />)}</Stack>
               <Typography color="text.secondary" sx={{ mt: 1 }}>{p.desc}</Typography>
               <Box sx={{ mt: 3 }}><ProjectGallery key={p.id} p={p} /></Box>
               <div className="label label-y" style={{ marginTop: 32, marginBottom: 12 }}>Impact</div>
-              <Stack spacing={1.25}>{p.highlights.map(h => <Stack key={h} direction="row" spacing={1.5}><Box sx={{ mt: 1.1, width: 6, height: 6, borderRadius: 99, bgcolor: '#ffd400', flexShrink: 0 }} /><Typography>{h}</Typography></Stack>)}</Stack>
+              <Stack spacing={1.25}>{p.highlights.map(h => <Stack key={h} direction="row" spacing={1.5}><Box sx={{ mt: 1.1, width: 6, height: 6, borderRadius: 99, bgcolor: '#E5BE3E', flexShrink: 0 }} /><Typography>{h}</Typography></Stack>)}</Stack>
               <div className="label label-y" style={{ marginTop: 32, marginBottom: 12 }}>Architecture</div>
               <Grid container spacing={1.5}>
                 {p.arch.map(([t, b], k) => (
                   <Grid item xs={12} sm={6} key={t}>
-                    <Card sx={{ p: 2.5, height: '100%', bgcolor: '#f6f6f4', '&:hover': { borderColor: '#ffd400' } }}>
-                      <span className="label">0{k + 1}</span>
-                      <Typography sx={{ fontWeight: 700, mt: .5 }}>{t}</Typography>
+                    <Card sx={{ p: 2.5, height: '100%', bgcolor: '#f5f5f4', '&:hover': { borderColor: '#E5BE3E' } }}>
+                      <Typography sx={{ fontWeight: 600 }}>{t}</Typography>
                       <Typography variant="body2" color="text.secondary" sx={{ mt: .75, lineHeight: 1.7 }}>{b}</Typography>
                     </Card>
                   </Grid>
@@ -943,10 +960,10 @@
     function StackSection() {
       const [q, setQ] = useState('');
       return (
-        <Box component="section" id="stack" sx={{ py: { xs: 9, md: 12 }, bgcolor: '#f6f6f4', borderTop: '1px solid', borderBottom: '1px solid', borderColor: 'divider' }}>
+        <Box component="section" id="stack" sx={{ pt: { xs: 10, md: 14 }, pb: { xs: 11, md: 15 }, bgcolor: '#f5f5f4', borderTop: '1px solid', borderBottom: '1px solid', borderColor: 'divider' }}>
           <Container maxWidth="lg">
             <SectionHead label="Stack" title="Tools I use to build across interfaces, data, systems, and AI-assisted workflows."
-              right={<TextField size="small" placeholder="Filter skills…" value={q} onChange={e => setQ(e.target.value)} sx={{ width: { xs: '100%', md: 240 }, '& .MuiOutlinedInput-root': { borderRadius: 999, bgcolor: '#fff' } }} />} />
+              right={<TextField size="small" placeholder="Filter skills" inputProps={{ 'aria-label': 'Filter skills' }} value={q} onChange={e => setQ(e.target.value)} sx={{ width: { xs: '100%', md: 240 }, '& .MuiOutlinedInput-root': { borderRadius: 999, bgcolor: '#fff' } }} />} />
             <Reveal>
               <Box className="marquee" sx={{ mb: 6, py: 1.5, borderTop: '1px solid', borderBottom: '1px solid', borderColor: 'divider' }}>
                 <div className="marquee-track">
@@ -966,13 +983,13 @@
                 if (!list.length) return null;
                 return (
                   <Reveal key={group} delay={gi * .06}>
-                    <Typography sx={{ fontWeight: 800, mb: 1.5 }}>{group}</Typography>
+                    <Typography component="h3" sx={{ fontWeight: 600, mb: 1.5, fontSize: 16 }}>{group}</Typography>
                     <Stack direction="row" flexWrap="wrap" gap={1}>
                       {list.map(s => (
-                        <motion.div key={s.n} whileHover={{ y: -3, scale: 1.03 }} whileTap={{ scale: .97 }}>
-                          <Chip label={s.n} icon={<Box sx={{ ml: '6px !important', width: 22, height: 22, borderRadius: 99, bgcolor: '#f0f0ec', display: 'grid', placeItems: 'center' }}><TechIcon item={s} /></Box>}
-                            sx={{ bgcolor: '#fff', border: '1px solid', borderColor: 'divider', pl: 0, pr: .5, height: 36, '&:hover': { borderColor: '#ffd400', bgcolor: '#fffbe0' } }} />
-                        </motion.div>
+                        <Box key={s.n} className="lift">
+                          <Chip label={s.n} icon={<Box sx={{ ml: '6px !important', width: 22, height: 22, borderRadius: 99, bgcolor: '#f5f5f4', display: 'grid', placeItems: 'center' }}><TechIcon item={s} /></Box>}
+                            sx={{ bgcolor: '#fff', border: '1px solid', borderColor: 'divider', pl: 0, pr: .5, height: 36, transition: 'border-color 200ms ease, background-color 200ms ease', '&:hover': { borderColor: '#E5BE3E', bgcolor: '#fbf6e3' } }} />
+                        </Box>
                       ))}
                     </Stack>
                   </Reveal>
@@ -993,7 +1010,7 @@
       return (
         <Box ref={ref} sx={{ position: 'relative', pl: 5 }}>
           <Box sx={{ position: 'absolute', left: 11, top: 10, bottom: 10, width: 2, bgcolor: 'divider', borderRadius: 2 }} />
-          <motion.div aria-hidden style={{ position: 'absolute', left: 11, top: 10, bottom: 10, width: 2, background: '#ffd400', borderRadius: 2, transformOrigin: 'top', scaleY: fill }} />
+          <motion.div aria-hidden style={{ position: 'absolute', left: 11, top: 10, bottom: 10, width: 2, background: '#E5BE3E', borderRadius: 2, transformOrigin: 'top', scaleY: fill }} />
           <Stack spacing={2.5}>{EXPERIENCE.map(x => <TimelineItem key={x.role + x.when} x={x} />)}</Stack>
         </Box>
       );
@@ -1004,16 +1021,16 @@
       const lit = useInView(ref, { margin: '0px 0px -45% 0px' });
       return (
         <Box ref={ref} sx={{ position: 'relative' }}>
-          <motion.span aria-hidden animate={{ backgroundColor: lit ? '#ffd400' : '#ffffff', borderColor: lit ? '#0a0a0a' : '#d6d6d2', scale: lit ? 1 : .8 }}
-            transition={{ duration: .35 }} style={{ position: 'absolute', left: -36, top: 22, width: 16, height: 16, borderRadius: 99, border: '2px solid', boxShadow: lit ? '0 0 0 5px rgba(255,212,0,.22)' : 'none' }} />
+          <motion.span aria-hidden animate={{ backgroundColor: lit ? '#E5BE3E' : '#ffffff', borderColor: lit ? '#0c0a09' : '#d6d3d1', scale: lit ? 1 : .8 }}
+            transition={{ duration: .35 }} style={{ position: 'absolute', left: -36, top: 22, width: 16, height: 16, borderRadius: 99, border: '2px solid', boxShadow: lit ? '0 0 0 5px rgba(229,190,62,.22)' : 'none' }} />
           <Reveal>
-            <SpotlightCard bg="#fafaf8" innerSx={{ p: 3 }}>
+            <SpotlightCard bg="#fafaf9" innerSx={{ p: 3 }}>
               <Stack direction="row" justifyContent="space-between" alignItems="flex-start" spacing={2}>
-                <Box><span className="label label-y">{x.org}</span><Typography sx={{ fontWeight: 800, mt: .5 }}>{x.role}</Typography></Box>
-                <Chip size="small" label={x.when} sx={{ bgcolor: '#0a0a0a', color: '#ffd400', flexShrink: 0 }} />
+                <Box><span className="label label-y">{x.org}</span><Typography sx={{ fontWeight: 650, mt: .5 }}>{x.role}</Typography></Box>
+                <Chip size="small" label={x.when} className="mono" sx={{ bgcolor: '#1c1917', color: '#fff', flexShrink: 0, fontSize: 12 }} />
               </Stack>
               <Stack spacing={.75} sx={{ mt: 1.5 }}>
-                {x.bullets.map(b => <Stack key={b} direction="row" spacing={1.25}><Box sx={{ mt: 1, width: 5, height: 5, borderRadius: 99, bgcolor: '#ffd400', flexShrink: 0 }} /><Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.7 }}>{b}</Typography></Stack>)}
+                {x.bullets.map(b => <Stack key={b} direction="row" spacing={1.25}><Box sx={{ mt: 1, width: 5, height: 5, borderRadius: 99, bgcolor: '#E5BE3E', flexShrink: 0 }} /><Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.7 }}>{b}</Typography></Stack>)}
               </Stack>
             </SpotlightCard>
           </Reveal>
@@ -1023,29 +1040,25 @@
 
     function Resume() {
       return (
-        <Box component="section" id="resume" sx={{ py: { xs: 9, md: 12 } }}>
+        <Box component="section" id="resume" sx={{ pt: { xs: 10, md: 14 }, pb: { xs: 11, md: 15 } }}>
           <Container maxWidth="lg">
             <SectionHead label="Resume" title="Experience, education, and the teams that shaped how I build."
               right={<Button variant="contained" href={PROFILE.resume} target="_blank" rel="noopener" endIcon={I.out}>View resume (PDF)</Button>} />
             <Grid container spacing={4}>
               <Grid item xs={12} md={7}>
-                <Typography sx={{ fontWeight: 800, mb: 2 }}>Experience</Typography>
+                <Typography component="h3" sx={{ fontWeight: 600, mb: 2, fontSize: 16 }}>Experience</Typography>
                 <ExperienceTimeline />
               </Grid>
               <Grid item xs={12} md={5}>
-                <Typography sx={{ fontWeight: 800, mb: 2 }}>Education</Typography>
+                <Typography component="h3" sx={{ fontWeight: 600, mb: 2, fontSize: 16 }}>Education</Typography>
                 <Reveal delay={.1}>
-                  <Card sx={{ p: 3, bgcolor: '#f6f6f4', '&:hover': { borderColor: '#ffd400' } }}>
+                  <Card sx={{ p: 3, bgcolor: '#fff', transition: 'border-color 200ms ease', '&:hover': { borderColor: '#E5BE3E' } }}>
                     <Stack direction="row" justifyContent="space-between" alignItems="flex-start" spacing={2}>
-                      <Box><span className="label label-y">{EDUCATION.school}</span><Typography sx={{ fontWeight: 800, mt: .5 }}>{EDUCATION.degree}</Typography></Box>
-                      <Chip size="small" label={EDUCATION.when} sx={{ bgcolor: '#0a0a0a', color: '#ffd400', flexShrink: 0 }} />
+                      <Box><span className="label label-y">{EDUCATION.school}</span><Typography sx={{ fontWeight: 650, mt: .5 }}>{EDUCATION.degree}</Typography></Box>
+                      <Chip size="small" label={EDUCATION.when} className="mono" sx={{ bgcolor: '#1c1917', color: '#fff', flexShrink: 0, fontSize: 12 }} />
                     </Stack>
-                    <Box sx={{ mt: 2 }}>
-                      <Stack direction="row" justifyContent="space-between"><Typography variant="body2" sx={{ fontWeight: 700 }}>GPA 3.67 / 4.00</Typography><Typography variant="body2" color="text.secondary">92%</Typography></Stack>
-                      <LinearProgress variant="determinate" value={92} sx={{ mt: .75, height: 6, borderRadius: 99, bgcolor: '#e6e6e2', '& .MuiLinearProgress-bar': { bgcolor: '#ffd400' } }} />
-                    </Box>
                     <Stack spacing={.75} sx={{ mt: 2 }}>
-                      {EDUCATION.bullets.map(b => <Stack key={b} direction="row" spacing={1.25}><Box sx={{ mt: 1, width: 5, height: 5, borderRadius: 99, bgcolor: '#ffd400', flexShrink: 0 }} /><Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.7 }}>{b}</Typography></Stack>)}
+                      {EDUCATION.bullets.map(b => <Stack key={b} direction="row" spacing={1.25}><Box sx={{ mt: 1, width: 5, height: 5, borderRadius: 99, bgcolor: '#E5BE3E', flexShrink: 0 }} /><Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.7 }}>{b}</Typography></Stack>)}
                     </Stack>
                   </Card>
                 </Reveal>
@@ -1073,38 +1086,43 @@
         if (!ok) { notify('Fix the highlighted fields and try again.', 'error'); return; }
         setBusy(true);
         setTimeout(() => {
-          const body = `${v.message}\n\n— ${v.name} (${v.email})`;
+          const body = `${v.message}\n\n- ${v.name} (${v.email})`;
           window.location.href = `mailto:${PROFILE.email}?subject=${encodeURIComponent(v.subject)}&body=${encodeURIComponent(body)}`;
           notify(`Thanks ${v.name.split(' ')[0]}. Your mail client should open now.`, 'success');
           setV({ name: '', email: '', subject: '', message: '' }); setErr({}); setBusy(false);
         }, 700);
       };
+      // Label above the input (never placeholder-as-label); the error text sits below and is tied to the field.
       const f = (k, label, extra = {}) => (
-        <TextField label={label} value={v[k]} onChange={e => setV({ ...v, [k]: e.target.value })} onBlur={() => check(k)}
-          error={!!err[k]} helperText={err[k] || ' '} {...extra} />
+        <Box>
+          <Box component="label" htmlFor={`field-${k}`} sx={{ display: 'block', fontSize: 14, fontWeight: 500, mb: .75 }}>{label}</Box>
+          <TextField id={`field-${k}`} name={k} value={v[k]} onChange={e => setV({ ...v, [k]: e.target.value })} onBlur={() => check(k)}
+            error={!!err[k]} helperText={err[k] || ' '} {...extra} />
+        </Box>
       );
       return (
-        <Box component="section" id="contact" sx={{ py: { xs: 9, md: 12 }, bgcolor: '#0a0a0a', color: '#fff' }}>
+        <Box component="section" id="contact" sx={{ pt: { xs: 10, md: 14 }, pb: { xs: 11, md: 15 }, borderTop: '1px solid', borderColor: 'divider' }}>
           <Container maxWidth="lg">
             <Grid container spacing={6}>
               <Grid item xs={12} md={5}>
                 <Reveal>
-                  <div className="label" style={{ color: '#ffd400', marginBottom: 12 }}>Contact</div>
-                  <Typography variant="h2" sx={{ color: '#fff' }}>Let's talk.</Typography>
-                  <Typography sx={{ mt: 2.5, color: 'rgba(255,255,255,.65)', lineHeight: 1.8 }}>Internship, freelance database work, or a hackathon team. My inbox is open.</Typography>
+                  <Typography variant="h2">Let's talk.</Typography>
+                  <Typography color="text.secondary" sx={{ mt: 2.5, lineHeight: 1.75, maxWidth: '44ch' }}>Internship, freelance database work, or a hackathon team. My inbox is open.</Typography>
                   <Stack sx={{ mt: 4 }} spacing={0}>
                     {[[PROFILE.email, `mailto:${PROFILE.email}`], [PROFILE.phone, `tel:${PROFILE.phone.replace(/-/g, '')}`], ['ryanchen.xyz', PROFILE.site], ['linkedin.com/in/ryanchen07', PROFILE.linkedin], ['github.com/ryan-c07', PROFILE.github]].map(([t, h]) => (
-                      <motion.a key={t} href={h} target={h.startsWith('http') ? '_blank' : undefined} rel="noopener" whileHover={{ x: 4 }}
-                        style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 0', borderBottom: '1px solid rgba(255,255,255,.12)', color: '#fff', textDecoration: 'none', fontWeight: 600 }}>
-                        <span>{t}</span><span style={{ color: '#ffd400' }}>{I.out}</span>
-                      </motion.a>
+                      <Box component="a" key={t} href={h} target={h.startsWith('http') ? '_blank' : undefined} rel="noopener"
+                        sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 1.75, borderBottom: '1px solid', borderColor: 'divider', color: 'text.primary', textDecoration: 'none', fontWeight: 500,
+                          '& .arrow': { color: 'var(--yellow-ink)', transition: 'transform 220ms cubic-bezier(0.23, 1, 0.32, 1)' },
+                          '@media (hover: hover) and (pointer: fine)': { '&:hover .arrow': { transform: 'translate(2px, -2px)' } } }}>
+                        <span>{t}</span><span className="arrow">{I.out}</span>
+                      </Box>
                     ))}
                   </Stack>
                 </Reveal>
               </Grid>
               <Grid item xs={12} md={7}>
                 <Reveal delay={.1}>
-                  <Card component="form" noValidate onSubmit={submit} sx={{ p: { xs: 3, md: 4 }, bgcolor: '#fff' }}>
+                  <Card component="form" noValidate onSubmit={submit} aria-label="Contact form" sx={{ p: { xs: 3, md: 4 }, bgcolor: '#fff' }}>
                     <Grid container spacing={2}>
                       <Grid item xs={12} sm={6}>{f('name', 'Name')}</Grid>
                       <Grid item xs={12} sm={6}>{f('email', 'Email', { type: 'email' })}</Grid>
@@ -1127,25 +1145,40 @@
       const [proj, setProj] = useState(null);
       const [snack, setSnack] = useState(null);
       const notify = (msg, type = 'success') => setSnack({ msg, type });
-      const toContact = () => document.getElementById('contact').scrollIntoView({ behavior: 'smooth' });
+      const toContact = () => document.getElementById('contact').scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
       return (
         <ThemeProvider theme={theme}>
+          <MotionConfig reducedMotion="user">
           <CssBaseline />
+          <a href="#main" className="skip-link">Skip to content</a>
           <FloatingNav onContact={toContact} />
           <Hero onContact={toContact} />
-          <About />
-          <Now />
-          <Projects onOpen={setProj} />
-          <StackSection />
-          <Resume />
-          <Contact notify={notify} />
-          <Box component="footer" sx={{ bgcolor: '#0a0a0a', color: 'rgba(255,255,255,.5)', py: 3, borderTop: '1px solid rgba(255,255,255,.1)', textAlign: 'center', fontSize: 13 }}>
-            © {new Date().getFullYear()} {PROFILE.name} · Made with <span style={{ color: '#ffd400' }}>♥</span> using React &amp; Material UI
+          <Box component="main" id="main" tabIndex={-1}>
+            <About />
+            <Now />
+            <Projects onOpen={setProj} />
+            <StackSection />
+            <Resume />
+            <Contact notify={notify} />
+          </Box>
+          <Box component="footer" sx={{ borderTop: '1px solid', borderColor: 'divider', py: 4 }}>
+            <Container maxWidth="lg">
+              <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems={{ sm: 'center' }} spacing={1.5} sx={{ fontSize: 14, color: 'text.secondary' }}>
+                <span>© {new Date().getFullYear()} {PROFILE.name}. Built with React and Material UI.</span>
+                <Stack direction="row" spacing={2.5} sx={{ '& a': { color: 'inherit', textDecoration: 'none', transition: 'color 200ms ease' }, '& a:hover': { color: 'text.primary' } }}>
+                  <a href={PROFILE.github} target="_blank" rel="noopener">GitHub</a>
+                  <a href={PROFILE.linkedin} target="_blank" rel="noopener">LinkedIn</a>
+                  <a href={`mailto:${PROFILE.email}`}>Email</a>
+                  <a href={PROFILE.resume} target="_blank" rel="noopener">Resume</a>
+                </Stack>
+              </Stack>
+            </Container>
           </Box>
           <ProjectDialog p={proj} onClose={() => setProj(null)} onContact={toContact} />
           <Snackbar open={!!snack} autoHideDuration={4500} onClose={() => setSnack(null)} anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}>
-            {snack && <Alert onClose={() => setSnack(null)} severity={snack.type} variant="filled" sx={{ borderRadius: 3, bgcolor: snack.type === 'success' ? '#ffd400' : undefined, color: snack.type === 'success' ? '#000' : undefined, fontWeight: 600 }}>{snack.msg}</Alert>}
+            {snack && <Alert onClose={() => setSnack(null)} severity={snack.type} variant="filled" sx={{ borderRadius: 3, bgcolor: snack.type === 'success' ? '#E5BE3E' : undefined, color: snack.type === 'success' ? '#000' : undefined, fontWeight: 600 }}>{snack.msg}</Alert>}
           </Snackbar>
+          </MotionConfig>
         </ThemeProvider>
       );
     }
