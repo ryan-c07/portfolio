@@ -32,3 +32,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local tooling and scratch
+.backup/
+.claude-flow/
+.swarm/
+.playwright-mcp/
+ruvector.db
