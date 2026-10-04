@@ -132,10 +132,10 @@
     };
 
     const HIGHLIGHTS = [
-      { t: 'Pharmacy DB', s: 'paid PostgreSQL client work' },
+      { t: 'Bao-bae', s: '219 live votes at a campus show' },
       { t: 'Headstarter', s: 'AI software engineering fellow' },
       { t: 'CS @ SBU', s: '3.67 GPA · Dean\'s List' },
-      { t: 'Full-stack', s: 'React, APIs, SQL, game dev' },
+      { t: 'Pharmacy DB', s: 'contract PostgreSQL data layer' },
     ];
 
     // Add more { src, caption } entries to get a clickable thumbnail strip under the photo.
@@ -153,9 +153,9 @@
     // shots: real screenshots in images/projects. layout 'duo' overlays a phone shot on a desktop shot in the card preview.
     const PROJECTS = [
       {
-        id: 'baobae', tag: 'Next.js', title: 'Bao-bae', badge: 'Live event · 200 users', date: 'Apr 2026',
-        desc: 'Mobile-first live voting app for a bachelor-style show run by the Cantonese Club (CTC) at Stony Brook. Audience members sign in with Google and get one vote per round, while production runs the show from an admin dashboard.',
-        stack: ['Next.js', 'React 19', 'TypeScript', 'Supabase Auth', 'PostgreSQL', 'Custom CSS'],
+        id: 'baobae', tag: 'Next.js', title: 'Bao-bae', badge: 'Live event · 219 votes', date: 'Apr 2026',
+        desc: 'Co-developed, mobile-first live voting app for a bachelor-style campus show run by the Cantonese Club (CTC) at Stony Brook. Audience members sign in with Google and get one vote per round, while production runs the show from an admin dashboard.',
+        stack: ['Next.js', 'React 19', 'TypeScript', 'Supabase', 'PostgreSQL'],
         links: [
           { label: 'Live site', href: 'https://baobae-kappa.vercel.app/' },
           { label: 'Admin view', href: 'https://baobae-kappa.vercel.app/admin' },
@@ -167,10 +167,9 @@
           { src: 'images/projects/baobae-results.jpg', alt: 'Bao-bae production dashboard with live vote totals', caption: 'Live Round 2 results in the production dashboard', bg: '#fbeee9' },
         ],
         highlights: [
-          'Ran live at a CTC event on April 30 for about 200 concurrent audience members.',
-          'Limited every Google account to one vote per phase with a unique (phase_number, mode, voter_id) constraint in Postgres.',
-          'Built an admin control room to open elimination or revival rounds, choose who is on the ballot, mark eliminations, and watch live totals.',
-          'Made round resets non-destructive: bumping phase_number starts a fresh round while keeping every past vote.',
+          'Co-developed and deployed mobile-first voting platform for a live campus show, processing 219 votes across 3 elimination rounds with Google OAuth authentication.',
+          'Enforced one-vote-per-round integrity via composite unique constraints and Row-Level Security policies, converting PostgreSQL constraint violations into user-facing error states.',
+          'Delivered near-real-time results by polling a PostgreSQL aggregate view at 1.5s intervals, avoiding websocket infrastructure while supporting live vote totals.',
         ],
         arch: [
           ['Server-checked voting API', 'Votes go through a Next.js route handler that verifies the Supabase Google session, checks the live phase and ballot, then writes the vote with a server-only client.'],
@@ -180,9 +179,9 @@
         ],
       },
       {
-        id: 'pharmacy', tag: 'PostgreSQL', title: 'Pharmacy Database Architect', badge: 'Paid project', date: 'Oct 2025',
-        desc: 'PostgreSQL database for an NYC pharmacy network, designed so a patient mobile app and a Twilio SMS bot can request and track prescription refills.',
-        stack: ['SQL', 'Bash', 'PostgreSQL', 'Twilio API'],
+        id: 'pharmacy', tag: 'PostgreSQL', title: 'Pharmacy Refill Database', badge: 'Contract', date: 'Oct 2025',
+        desc: 'Owned the data layer on a remote team building a prescription refill platform: a normalized PostgreSQL schema covering every refill from request through pickup.',
+        stack: ['PostgreSQL', 'SQL', 'Bash', 'Twilio API'],
         links: [
           { label: 'Schema diagram', href: 'https://drawsql.app/teams/personal-3758/diagrams/pharmacy-rx' },
         ],
@@ -191,14 +190,14 @@
           { src: 'images/projects/pharmacy-schema.jpg', alt: 'Pharmacy Rx database schema diagram', caption: 'Schema outline on drawSQL', fit: 'cover', pos: 'center 20%', bg: '#f7f7f8' },
         ],
         highlights: [
-          'Architected a multi-branch NYC pharmacy network database in PostgreSQL to streamline operations.',
-          'Designed secure access schema connecting mobile applications and TwilioBot API.',
-          'Built synthetic data scripts to simulate patient & prescription interactions for system testing.',
+          'Owned the data layer on a remote team building a prescription refill platform, designing a normalized 6-table PostgreSQL schema modeling the full refill lifecycle from request through pickup.',
+          'Enforced referential integrity across 5 foreign-key relationships and prevented duplicate prescriptions per patient with a composite unique constraint, backing status and request-source fields with lookup tables.',
+          'Optimized read paths with composite indexes on patient-prescription and name-DOB lookups, exposing a denormalized view joining patients, refills, and status for application queries.',
         ],
         arch: [
           ['Patients at the center', 'Patients holds name, date of birth, phone, and email. App accounts, refills, and Twilio sessions all link back to it by patient_id.'],
           ['Refill lifecycle', 'Refills track the Rx number, medication, requested and ready dates, pickup time, and notes. Status and request origin live in the RefillStatus and RequestSource lookup tables.'],
-          ['Login data kept separate', 'AppUsers stores the email, password hash, verification flag, push device token, and last login apart from medical records.'],
+          ['Fast reads for the app', 'Composite indexes cover patient-prescription and name-and-birthdate lookups, and a denormalized view joins patients, refills, and status for application queries.'],
           ['Twilio conversation log', 'TwilioSessions records each Twilio session ID, channel, and start and end time, tied to a patient and the refill it concerns.'],
         ],
       },
@@ -214,8 +213,8 @@
           { src: 'images/projects/nuetrivia.jpg', alt: 'Nue-Trivia game frame with the Pear character', caption: "Frame rebuilt from the game's own sprites and map", fit: 'cover', pos: 'center 30%', bg: '#00ab00' },
         ],
         highlights: [
-          'Built award-winning youth nutrition game featuring custom game sprites and real-time AI-generated trivia.',
-          'Created interactive gameplay loop with point-based reward mechanisms to boost learning engagement.',
+          'Designed educational nutrition game featuring custom sprites and AI-generated questions for young audiences.',
+          'Constructed interactive Q&A gameplay with point-based reward system to enhance child learning engagement.',
         ],
         arch: [
           ['Swing game loop', 'A fixed 60 FPS loop repaints a 1280 by 640 JFrame panel. A shared Engine object gives every class access to the player, stage, input, and sound.'],
@@ -227,7 +226,7 @@
       {
         id: 'pantry', tag: 'Next.js', title: 'Pantry Tracker', badge: 'Headstarter', date: 'Aug 2024',
         desc: 'Pantry inventory app with instant search and Gemini recipe ideas. Each person signs in with Google and gets a private pantry.',
-        stack: ['Next.js', 'React', 'Material-UI', 'Firebase', 'Gemini API'],
+        stack: ['JavaScript', 'React.js', 'Material-UI', 'Gemini API', 'Next.js', 'Firebase'],
         links: [
           { label: 'Live site', href: 'https://pantry-tracker-bay-xi.vercel.app/' },
           { label: 'Demo video', href: 'https://youtu.be/1xDUebEPZEA' },
@@ -238,9 +237,8 @@
           { src: 'images/projects/pantry.jpg', alt: 'Pantry Tracker Google sign-in screen', caption: 'Google sign-in screen', fit: 'cover', pos: 'center', bg: '#f5f2ec' },
         ],
         highlights: [
-          'Created responsive Web application tracking pantry inventory with dynamic search and AI-driven recipe generation.',
-          'Developed fully mobile-optimized UI with interactive inventory management modals.',
-          'Added Google sign-in with a private pantry per user, protected by Firestore security rules.',
+          'Developed responsive web app to track pantry inventory and provide AI-powered recipe suggestions.',
+          'Implemented dynamic search and modals for inventory management with fully mobile-optimized UI.',
         ],
         arch: [
           ['Next.js and Material-UI', 'A Next.js app with Material-UI dialogs for adding and editing items and a layout that works on phones.'],
@@ -295,17 +293,20 @@
 
     const STACK = {
       'Languages': [
-        { n: 'Java', icon: 'openjdk' }, { n: 'Kotlin', icon: 'kotlin' }, { n: 'Python', icon: 'python' }, { n: 'Swift', icon: 'swift' },
-        { n: 'SQL', icon: 'postgresql' }, { n: 'JavaScript', icon: 'javascript' }, { n: 'TypeScript', icon: 'typescript' }, { n: 'HTML/CSS', icon: 'html5' },
+        { n: 'Java', icon: 'openjdk' }, { n: 'Python', icon: 'python' }, { n: 'C', icon: 'c' }, { n: 'TypeScript', icon: 'typescript' },
+        { n: 'JavaScript', icon: 'javascript' }, { n: 'Kotlin', icon: 'kotlin' }, { n: 'Swift', icon: 'swift' }, { n: 'SQL', icon: 'postgresql' },
+        { n: 'HTML/CSS', icon: 'html5' }, { n: 'Assembly', mono: 'ASM' },
       ],
-      'Frameworks & APIs': [
-        { n: 'React.js', icon: 'react' }, { n: 'Next.js', icon: 'nextdotjs' }, { n: 'Material-UI', icon: 'mui' }, { n: 'OpenAI API', mono: 'AI' },
-        { n: 'Gemini API', icon: 'googlegemini' }, { n: 'Twilio API', mono: 'Tw' }, { n: 'PostgreSQL', icon: 'postgresql' },
-        { n: 'Supabase', icon: 'supabase' }, { n: 'Firebase', icon: 'firebase' },
+      'Frameworks & Libraries': [
+        { n: 'React.js', icon: 'react' }, { n: 'Next.js', icon: 'nextdotjs' }, { n: 'Material-UI', icon: 'mui' },
       ],
-      'Tools': [
-        { n: 'Git', icon: 'git' }, { n: 'VS Code', mono: '</>' }, { n: 'PyCharm', icon: 'pycharm' }, { n: 'IntelliJ', icon: 'intellijidea' },
-        { n: 'Android Studio', icon: 'androidstudio' }, { n: 'Xcode', icon: 'xcode' }, { n: 'Bash', icon: 'gnubash' },
+      'Developer Tools': [
+        { n: 'Git', icon: 'git' }, { n: 'PostgreSQL', icon: 'postgresql' }, { n: 'Supabase', icon: 'supabase' }, { n: 'Vercel', icon: 'vercel' },
+        { n: 'VS Code', mono: '</>' }, { n: 'PyCharm', icon: 'pycharm' }, { n: 'IntelliJ', icon: 'intellijidea' }, { n: 'Android Studio', icon: 'androidstudio' },
+        { n: 'Xcode', icon: 'xcode' }, { n: 'Bash', icon: 'gnubash' },
+      ],
+      'APIs & Services': [
+        { n: 'OpenAI API', mono: 'AI' }, { n: 'Gemini API', icon: 'googlegemini' }, { n: 'Twilio API', mono: 'Tw' }, { n: 'Firebase', icon: 'firebase' },
       ],
       'Certifications': [
         { n: 'Google Cybersecurity (Coursera)', icon: 'google' }, { n: 'Meta Front-End Developer (Coursera)', icon: 'meta' },
@@ -321,14 +322,12 @@
       : <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: '-.02em', lineHeight: 1 }}>{item.mono}</span>;
 
     const EXPERIENCE = [
-      { org: 'Headstarter AI', role: 'Software Engineering Fellow', when: 'Jul 2024 – Sept 2024', loc: 'Stony Brook, NY',
-        bullets: ['Engineered AI-driven projects including Pantry Tracker, AI flashcards, and an AI customer support system using Next.js, Material-UI, and OpenAI and Gemini APIs.', 'Refined technical communication skills through 5+ mock interviews with mentors and peers.'] },
-      { org: 'NYCDOE Division of Instructional & Information Technology', role: 'Intern', when: 'Jul 2024 – Aug 2024', loc: 'Brooklyn, NY',
-        bullets: ['Analyzed TeachHub data and surveyed 500+ K-12 students across the nation\'s largest school district (912,064 students).', 'Synthesized findings into comprehensive report and presented findings directly to CIO and executive leadership.'] },
-      { org: 'NYCDOE Division of Instructional & Information Technology', role: 'Project Intern', when: 'Apr 2024 – May 2024', loc: 'Brooklyn, NY',
-        bullets: ['Standardized official transcript workflows using detailed UML diagrams and technical proposals.', 'Evaluated official student records (transcripts, IEPs, 504s, PSAL docs) across departments.'] },
-      { org: 'Yaya Tea Garden', role: 'Barista', when: 'Jul 2024 – Aug 2024', loc: 'Brooklyn, NY',
-        bullets: ['Served 100+ daily customers, crafted 500+ unique drink recipes, and managed store closing/financial reconciliation.'] },
+      { org: 'Headstarter AI', role: 'Software Engineering Fellow', when: 'Jul 2024 – Sept 2024', loc: 'New York, NY',
+        bullets: ['Engineered AI-driven projects including Pantry Tracker, AI flashcards, and an AI customer support system using Next.js, Material-UI, and the OpenAI and Gemini APIs.'] },
+      { org: 'NYCDOE Division of Instructional and Information Technology', role: 'Intern', when: 'Jul 2024 – Aug 2024', loc: 'Brooklyn, NY',
+        bullets: ['Presented key insights to CIO and executive team, influencing strategic decisions.', 'Analyzed TeachHub usage and surveyed 500+ K-12 students to improve functionality for the largest U.S. school district (912,064 students).'] },
+      { org: 'NYCDOE Division of Instructional and Information Technology', role: 'Project Intern', when: 'Apr 2024 – May 2024', loc: 'Brooklyn, NY',
+        bullets: ['Standardized official transcript processes across NYC DOE systems by designing detailed UML diagrams and workflow proposals.', 'Documented edge cases and created scenarios to ensure accurate record delivery across departments.', 'Examined student records including transcripts, IEPs, 504s, and PSAL documentation to inform recommendations.'] },
     ];
 
     const EDUCATION = {
@@ -665,10 +664,10 @@
                   <div className="label label-y" style={{ marginBottom: 12 }}>About</div>
                   <Typography variant="h2">I build practical, polished software that turns messy workflows into products people can actually use.</Typography>
                   <Typography color="text.secondary" sx={{ mt: 3, lineHeight: 1.8 }}>
-                    I am a Computer Science student at Stony Brook University and a software engineer in New York. My work sits between the data layer and the user: production PostgreSQL schemas for a paid pharmacy client, AI-driven web apps built as a Headstarter fellow, and a hackathon-winning game with live GPT-4 trivia.
+                    I am a Computer Science student at Stony Brook University and a software engineer in New York. My work sits between the data layer and the user: a live voting app that handled 219 votes at a campus show, the PostgreSQL data layer for a contract pharmacy refill platform, AI-driven web apps built as a Headstarter fellow, and a hackathon-winning trivia game.
                   </Typography>
                   <Typography color="text.secondary" sx={{ mt: 2, lineHeight: 1.8 }}>
-                    At the NYC Department of Education I surveyed 500+ students across the nation's largest school district and presented the findings to the CIO. Outside of work I sketch UML diagrams, tune queries, and occasionally pour tea.
+                    At the NYC Department of Education I surveyed 500+ students across the nation's largest school district and presented key insights to the CIO and executive team.
                   </Typography>
                 </Reveal>
                 <Grid container spacing={2} sx={{ mt: 2 }}>
